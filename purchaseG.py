@@ -1,131 +1,26 @@
-# readfiles.py 	read issbi.csv	items =[]
-#				read iiqr.csv   transactions = []
-#				prints item history, possibly with accurate total sales.
-# readfiles2.py populateItemHistory() compares total sales to total of all other transaction types
-# readfiles3.py		
-# readfiles4.py refactor storing transactions in items, other in items.
-#				define items from transactions
-# readfiles5.py add datetime to transaction object
-# readfiles6.py 
-# readfiles7.py		
-# readfiles8.py try iiqrall2017dec26.CSV - missing "Trans #"
-# 				itemStats prints by year
-# readfiles9.py itemStats prints by month
-# readfiles10.py itemStats prints by maximum total in month in year		
-#                itemStats prints by maximum total in 30 days in year
-#                itemStats prints by maximum total in 10 days in year		
-#readfiles11.py  transactions including "on hand"
-# readfiles12.py 
-# readfiles13.py addItemPhantoms phantomSO & phantomOHqty
-# readfiles14.py read issbi to get item reorder pt
-#				 show what to purchase
-#  -- see readfiles15.py
-# readfiles14a.py  for items needed to be purchased,
-#					print itemStats, phantom sales history
-#					to confirm reorder points.
-# readfiles14b.py  export item phantom sales into "itemsales.csv"	
-#					that can be read into excel to graph history
-#					of "Phantom sale" transactions for an item.
-# readfiles14c.py  item.openPurchaseOrderQty() - returns item.getQty on open PO and feeds into
-#					item.getPurchase1(), item.getPurchase2() so as not to print
-#				 	items that have been ordered as needing to be ordered.
-#				   check note:  these include some asy items that were once purchased but now are not
-#				   in QB.  Updates stats from iiqr based on getItemName and getItemDesc.
-# radfile14d.py
-# readfile14e.py   iiqr slices less than 3,080 KB  - see comment-able line 208...
-# readfile14f.py
-# readfile14g.py 	print items needing logical build
-#					try writeIndentedBoms(), 
-# readFile14h.py investigate foot*.*;  "foot - screw on" fails to appear as item
-#					to be ordered when it should appear.
-#					see checkTotOH()
+# filename:  purchaseG.py
 
+### Purchase Guidance takes data from reports generated in
+### QuickBooks and transforms data into information:
 
+###	Data Input (QuickBooks reports):
+###		Inventory Item Quick Report (iiqr.csv)
+###		Inventory Status by Item (issbi.csv)
+###		Purchases by Item Detail (pbid.csv)
+ 
+### Data Output:
+###   	Indented Bills of Materials
+###		Sales history
+###		Purchase Guidance
+
+# standard library
 import csv
 import string 
 import datetime
 
-class Transaction(object):
-	def __init__(self, item, desc, tNum, type, dte,
-				 num, qty, soNum, soDte=None):
-		self.itemName = item
-		self.desc = desc
-		self.tNum = tNum
-		self.type = type
-		
-		self.date = dte
-		self.num = num
-		self.qty = qty
-		# replace qty = "" with "0"
-		# qty = "" is observed in QB csv lines that include "purchase order"
-		# 
-		if qty =="":
-			self.qty = "0"
-		self.soNum = soNum   
-		self.invoiceSaleDate = soDte
-		# check if qb provides link from invoice to sales order
-		try:
-			if type == "Invoice":
-				assert not soNum == ""
-		except:
-			# print "\nwarning Invoice has no S.O. in available data for:"
-			# print self
-			pass
-	def getSoNum(self):
-		return self.soNum
-	def getItemName(self):
-		return self.itemName
-	def getItemDesc(self):
-		return self.desc
-	def getTnum(self):
-		return self.tNum
-	def getType(self):
-		return self.type
-	def getQty(self):
-		return self.qty
-	def getInvoiceSoNum(self):
-		return self.soNum
-	def setInvoiceSaleDate(self,date):
-		# assert type(date) == datetime
-		self.invoiceSaleDate = date
-	def getInvoiceSaleDate(self):
-		return self.invoiceSaleDate
-	def getDate(self):
-		return self.date
-	def getNum(self):
-		return self.num
+import transaction
 
-	def getShortStr(self):
-		"""returns truncated data useful when printing Item objects"""
-		ret = " <xaction:  " + self.itemName[:20] + ", "
-		# ret += " Desc: " 		
-		ret +=  self.desc[:20] + ", "
-		# ret += " Xaction #: "
-		ret +=  self.tNum + ", "
-		# ret += " Type #: " 
-		ret += self.type + ", "
-		# ret += " Date: "
-		ret += self.date.__str__() + ", "
-		# ret += " Num: "
-		ret += self.num + ", "
-		# ret += " Qty: " 
-		ret += self.qty + ", "
-		# ret += " Invoice's S.O #: "
-		ret += self.soNum + ">\n"
-		return ret
-		
-	def __str__(self):
-		ret = "<Transaction:  " + self.itemName + "\n "
-		ret += " Desc: " 		+ self.desc + "\n "
-		ret += " Xaction #: " 	+ self.tNum + "\n "
-		ret += " Type #: " 		+ self.type + "\n "
-		ret += " Date: " 		+ self.date.__str__() + "\n "
-		ret += " Num: "			+ self.num + "\n "
-		ret += " Qty: " 		+ self.qty + "\n "
-		ret += " Invoice's S.O #: " + self.soNum + "\n "
-		ret += " Invoice's Sale Date " + self.invoiceSaleDate.__str__() + ">\n"
-		return ret
-		
+
 def readiiqr(filename = "iiqr.csv"):
 	""" 
 	Reads Inventory Item Quick Reports, a qb generated report. 
@@ -202,7 +97,7 @@ def readiiqr(filename = "iiqr.csv"):
 			dte = datetime.date(int(mmddyy[2]),int(mmddyy[0]),int(mmddyy[1]))
 			
 			#create Transaction and append to transactions
-			transactions.append(Transaction(itemName, itemDesc, tran, type, 
+			transactions.append(transaction.Transaction(itemName, itemDesc, tran, type, 
 								 dte, num, qty, so))	
 				
 	return transactions, itemStatsFromIiqr
@@ -1160,7 +1055,7 @@ def addItemPhantoms(items = items):
 					phantomQty = str(float(itemQty) * float(itemInIbom[0]))[:4]
 					phantomItemName = itemInIbom[2]
 					phantomDesc = itemInIbom[3]
-					phantomSale = Transaction(phantomItemName, phantomDesc, 
+					phantomSale = transaction.Transaction(phantomItemName, phantomDesc, 
 											  itemTnum, itemType, itemDate,
 											  itemNum,	phantomQty, itemSO, 
 											  itemInvoiceSaleDate)	
