@@ -1,5 +1,9 @@
 # filename:  functions.py
 
+import csv
+import datetime
+import transaction
+
 def readiiqr(filename = "iiqr.csv"):
 	""" 
 	Reads Inventory Item Quick Reports, a qb generated report. 
@@ -80,3 +84,6 @@ def readiiqr(filename = "iiqr.csv"):
 								 dte, num, qty, so))	
 				
 	return transactions, itemStatsFromIiqr
+
+	
+	

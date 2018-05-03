@@ -20,11 +20,12 @@ import datetime
 
 # classes 
 import transaction
-import functions
+
+# functions
+import readiiqr
 
 
-	
-transactions, itemStatsFromIiqr = functions.readiiqr()
+transactions, itemStatsFromIiqr = readiiqr.readiiqr()
 
 
 # transaction slices from less than 3,080 KB csv file size. 
