@@ -85,5 +85,37 @@ def readiiqr(filename = "iiqr.csv"):
 				
 	return transactions, itemStatsFromIiqr
 
+# transaction slices from less than 3,080 KB csv file size.
+# transactions, itemStatsFromIiqr = readiiqr("iiqr2004-01-01-to-2007-12-31.CSV")
+# transactionsSlice1, itemStatsFromIiqr = readiiqr("iiqr2008-01-01-to-2010-12-31.CSV")
+# transactions = transactions + transactionsSlice1
+# transactionsSlice2, itemStatsFromIiqr = readiiqr("iiqr2011-01-01through2014-12-31.CSV")
+# transactions = transactions + transactionsSlice2
+# transactionsSlice3, itemStatsFromIiqr = readiiqr("iiqr2015-01-01-to-2018-01-31.CSV")
+# transactions = transactions + transactionsSlice3
+
+
+# print '\nshowing iiqrItemStats:'
+# for item in itemStatsFromIiqr:
+	# print item
 	
-	
+# limit = 2
+# soNums = []
+# print "\nshowing", limit , 'Transactions of type "Invoice"'
+# for t in transactions:
+	# if t.type == "Invoice":
+		# print t
+		# soNums.append(t.getInvoiceSoNum())
+		# limit -= 1
+		# if limit <= 0:
+			# break
+# limit = 2
+# print "\nshowing Transactions related to those listed above"
+# for t in transactions:
+	# if (t.type == "Sales Order" and t.getNum() in soNums):
+		# print t
+		# limit -= 1
+		# if limit <= 0:
+			# break
+# print "readiiqr() yields", len(transactions), "transactions"
+# assert False
