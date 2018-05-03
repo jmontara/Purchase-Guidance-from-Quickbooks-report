@@ -18,7 +18,10 @@ import csv
 import string 
 import datetime
 
+# classes & functions
 import transaction
+import function
+
 
 
 def readiiqr(filename = "iiqr.csv"):
