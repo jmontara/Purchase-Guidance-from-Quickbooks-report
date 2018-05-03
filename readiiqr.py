@@ -85,6 +85,14 @@ def readiiqr(filename = "iiqr.csv"):
 				
 	return transactions, itemStatsFromIiqr
 
+
+## Multiple iiqr files may be read, due to QuickBooks
+# output csv file #  size limitation.  This is required
+# read all transactions.  A single file has been seen capable
+# of storing greater than 15,000 transactions, which
+# equates to more than 3 years of transactions for some
+# companies.
+
 # transaction slices from less than 3,080 KB csv file size.
 # transactions, itemStatsFromIiqr = readiiqr("iiqr2004-01-01-to-2007-12-31.CSV")
 # transactionsSlice1, itemStatsFromIiqr = readiiqr("iiqr2008-01-01-to-2010-12-31.CSV")
