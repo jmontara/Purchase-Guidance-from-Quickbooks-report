@@ -1,5 +1,6 @@
 # filename:  transaction.py
 
+
 class Transaction(object):
 	def __init__(self, item, desc, tNum, type, dte,
 				 num, qty, soNum, soDte=None):

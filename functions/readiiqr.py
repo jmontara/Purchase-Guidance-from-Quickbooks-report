@@ -1,8 +1,11 @@
-# filename:  functions.py
+# readiiqr.py
 
+# standard library
 import csv
 import datetime
-import transaction
+
+import classes.transaction
+
 
 def readiiqr(filename = "iiqr.csv"):
 	""" 
@@ -80,7 +83,7 @@ def readiiqr(filename = "iiqr.csv"):
 			dte = datetime.date(int(mmddyy[2]),int(mmddyy[0]),int(mmddyy[1]))
 			
 			#create Transaction and append to transactions
-			transactions.append(transaction.Transaction(itemName, itemDesc, tran, type, 
+			transactions.append(classes.transaction.Transaction(itemName, itemDesc, tran, type, 
 								 dte, num, qty, so))	
 				
 	return transactions, itemStatsFromIiqr

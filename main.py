@@ -8,7 +8,7 @@
 ###		Inventory Status by Item (issbi.csv)
 ###		Purchases by Item Detail (pbid.csv)
  
-### Data Output:
+### Data Output (flat files and/or print to console):
 ###   	Indented Bills of Materials
 ###		Sales history
 ###		Purchase Guidance
@@ -19,417 +19,23 @@ import string
 import datetime
 
 # classes 
-import transaction
+import classes.transaction 
+import classes.bom 
+import classes.indentedBom
 
 # functions
-import readiiqr
+import functions.readiiqr
+import functions.readissbi
+import functions.buildItems
 
 
-transactions, itemStatsFromIiqr = readiiqr.readiiqr()
 
+transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()	
 		
-		
-class Item(object):
-	
-	def __init__(self, itemName, itemDesc):
-		self.itemName = itemName
-		self.itemDesc = itemDesc
-		
-		self.xactions = []
-		
-		# itemStatsFromIiqr
-		# from QB inventory item quick report 
-		self.totOH = None
-		self.totSO = None
-		self.totPO = None
-		
-		# itemStatsFromIssbi
-		# from QB inventory stock status by item
-		self.roPoint = None
-		
-		# Item creating assemblies have a Transaction being of
-		# type "Build Assembly" and a quantity being of
-		# a positive value.  Transaction stored here  
-		# is the most recent such transaction:
-		self.itemCreatingTransaction = None 
-		
-		# Bill of Materials (bom) ...
-		self.bom	= ''
-		
-		# Indented Bill of Materials (iBom) ...
-		self.iBom 	= ''
-		
-		# Item Statistics (itemStats) ...
-		self.itemStats = ''
 
-		# from addItemPhantoms
-		self.phantomSOqty = 0.0
-		self.phantomOHqty = 0.0
-		self.phantomROpoint = 0.0
-		self.upperAssyNames = []
-		
-	def getTotSO(self):
-		return self.totSO
-	
-	def getROpoint(self):
-		return self.roPoint
-			
-	def getTotOH(self):
-		return self.totOH
-
-	def addPhantomSOqty(self, qty):
-		""" 
-		Assumes qty comes only from function addItemPhantoms.
-			
-		Inputs:
-		self	- object, Item object
-		qty		- float, a quantity required to fill
-				       the sales order of a upper level item. 
-		"""
-		self.phantomSOqty += qty
-		
-	def addPhantomOHqty(self, qty):
-		""" 
-		Assumes qty comes only from function addItemPhantoms.
-		
-		Inputs:
-		self	- object, Item object
-		qty		- float, a quantity that exists 
-					     in an upper level item 
-		"""
-		self.phantomOHqty += qty
-		
-	def addPhantomROpoint(self, qty):
-		""" 
-		Assumes qty comes only from function addItemPhantoms.
-		
-		Inputs:
-		self	- object, Item object
-		qty		- float, a quantity that exists 
-					     in an upper level item 
-		"""
-		self.phantomROpoint += qty
-		
-	def addUpperAssy(self, itemName):
-		""" 
-		Assumes qty comes only from function addItemPhantoms.
-		
-		Inputs:
-		self	- object, Item object
-		itemName- str, an upper level itemName 
-		"""
-		self.upperAssyNames.append(itemName)	
-	
-	def getPhantomOHqty(self):
-		return self.phantomOHqty
-		
-	def getPhantomSOqty(self):
-		return self.phantomSOqty
-		
-	def getPhantomROpoint(self):
-		return self.phantomROpoint
-	
-	def getUpperAssyNames(self):
-		"""
-		returns a list of upper assembly names
-		"""
-		return self.upperAssyNames
-	
-	def setItemStatsFromIiqr(self, value, qty):
-		"""
-		self 	- object, Item object
-		value	- str, 	value is a subset of 
-								["Tot On Hand"
-								 , "Tot On Sales Order"
-								 , "Tot On Purchase Order"]
-		qty 	- str, examples "0", "5", "-5"
-		
-		"""		
-		qty = float(qty)	
-		if value == "Tot On Hand":
-			self.totOH = qty
-		if value == "Tot On Sales Order":
-			self.totSO = qty
-		if value == "Tot On Purchase Order":
-			self.totPO = qty
-			
-		# for debug:
-		# if value == "Tot On Sales Order"\
-					# and self.itemName == "Cable-Power-China":
-			# print "value", value, "qty", qty
-			# print "self.totOH:", self.totOH
-			# print "self.totSO:", self.totSO
-			# print "self.totPO:", self.totPO
-			# assert False 
-			
-	def setItemStatsFromIssbi(self, roPoint):
-		"""
-		self 	- object, Item object
-		roPoint	- str, string representation of QB reorder point
-					example:  "0"
-					example:  "5"
-		"""			
-		roPoint = float(roPoint)
-		self.roPoint = roPoint
-		
-	def setItemStats(self, itemStats):
-		# assert type(itemStats) == ItemStats
-		self.itemStats = itemStats
-		
-	def getItemStats(self):
-		return self.itemStats
-		
-	def getItemName(self):
-		return self.itemName
-		
-	def getItemDesc(self):
-		return self.itemDesc
-	
-	def addXaction(self, transaction):
-		"""
-		Appends transaction to the item's transaction list.
-		Also, sets self.itemCreatingTransaction 
-		if transaction has has the following characteristics:
-			type = "Build Assembly"
-			qty  > 0
-			most recent
-		"""
-		self.xactions.append(transaction)
-
-		# a build assembly that creates this item
-		if transaction.getType() == "Build Assembly"\
-			and float(transaction.getQty()) > 0.0\
-			and self.itemCreatingTransaction == None:
-			self.itemCreatingTransaction = transaction
-			return
-			
-		# a more recent build assembly	that creates this item
-		if transaction.getType() == "Build Assembly"\
-			and float(transaction.getQty()) > 0.0\
-			and float(self.itemCreatingTransaction.getTnum())\
-				< float(transaction.getTnum()):
-			self.itemCreatingTransaction = transaction
-			return			
-
-	def getXactions(self):
-		return self.xactions
-		
-	def getXactionsStr(self):
-		ret = ""
-		for xaction in self.xactions:
-			ret += xaction.getShortStr()
-		return ret
-		
-	def getItemCreatingTransaction(self):
-		return self.itemCreatingTransaction
-		
-	def setBom(self, bom):
-		# print "self.bom:", self.bom
-		# print "bom:", bom
-		# assert self.bom == None
-		self.bom = bom
-		
-	def getBom(self):
-		return self.bom
-		
-	def setIndentedBom(self, iBom):
-		# assert self.iBom == None
-		self.iBom = iBom
-	
-	def getIbom(self):
-		""" 
-		returns indented bill of materials
-		"""
-		return self.iBom
-
-	def hasPhantomSale(self):
-		""" 
-		Returns True if the item has Phantom Sales.
-		
-		Used for diagnostic; every item should, after
-		creating Transactions of type ""Phantom Sale",
-		return True if it is on a indented Bill of Materials.
-		
-		Some critical items are, however, purchased but 
-		not on any Bill of Materials.  These items include
-		the processor, pal and others.  These items are held
-		in reserve in case of "EOL", "NLA", end of life,
-		no longer available, or other supply chain issue.
-		"""
-		if "Phantom Sale" in\
-		self.getItemStats().getOutDict().keys():
-			return True
-		else:
-			return False
-			
-	def isPurchased(self):
-		"""
-		Returns True if item's transactions include
-		a transaction of type "Bill" or "Credit Card Charge"
-		and the item is not an assembly.
-		
-		"""
-		if len(self.getIbom().getItems()) > 1:
-			return False
-		for transaction in self.getXactions():
-			if transaction.getType() == "Bill":
-				return True
-			if transaction.getType() == "Credit Card Charge":
-				return True
-		return False
-
-	def onOpenPurchaseOrder(self):
-		"""
-		Returns the total of quantities on open purchase orders
-		for this item.  
-		"""
-		raise notimplementederror
-		
-		
-	def getPurchase1(self):
-		"""
-		Returns quantity required to fill Open
-		Sales orders.
-
-		If the return is a negative value, no
-		purchase is required.
-		
-		If the return is a positive value,
-		purchase of the returned quantity is required 
-		
-		"""
-		# return a negative value for non-purchased items.
-		if not self.isPurchased():
-			return -1.0
-		
-		try:
-			# item created by purchase order transaction
-			return abs(self.getPhantomSOqty())\
-				   - abs(self.getPhantomOHqty())\
-				   - abs(self.totPO)
-		except:
-			# item not created by purchase order transaction
-			return abs(self.getPhantomSOqty())\
-				   - abs(self.getPhantomOHqty())			
-		
-	def getPurchase2(self):
-		"""
-		Returns quantity required to fill Open
-		Sales Orders and maintain the reorder point.
-
-		If the return is a negative value, no
-		purchase is required.
-		
-		If the return is a positive value,
-		purchase of the returned quantity is required 
-		
-		"""
-		# return a negative value for non-purchased items.
-		if not self.isPurchased():
-			return -1.0
-		
-		try:
-			# item is purchased using a PO
-			return abs(self.getPhantomSOqty())\
-				   - abs(self.getPhantomOHqty())\
-				   + abs(self.getPhantomROpoint())\
-				   - abs(self.totPO)
-		except: 
-			# print "\n\n\nwarningshould be an item not created by a purchase order:"
-			# print item
-			return abs(self.getPhantomSOqty())\
-				   - abs(self.getPhantomOHqty())\
-				   + abs(self.getPhantomROpoint())\
-	
-		
-	def getTotPO(self):
-		"""returns quantity on open PO """
-		if self.totPO == None:
-			return 0.0
-		return self.totPO
-
-	def __str__(self):
-		ret = "\n\n<Item: " 
-		ret += self.itemName  
-		# ret += " (" + self.itemDesc + ")>\n"
-		# ret += self.getIbom().__str__() 
-		# ret += self.getXactionsStr()
-		ret += self.itemStats.__str__()
-		ret += "\nOn Hand: " + self.totOH.__str__()
-		ret += "    On Sales Order: " + self.totSO.__str__()
-		ret += "    On Purchase Order: " + self.totPO.__str__()
-		ret += "    RO Point: "   + self.roPoint.__str__()
-		ret += "\nWhere used: " + self.upperAssyNames.__str__()
-		ret += "\nPhantom RO Point: "   + self.phantomROpoint.__str__()
-		ret += "\nPhantom OH: " + self.phantomOHqty.__str__()
-		ret += "\nPhantom SO: " + self.phantomSOqty.__str__()
-		return ret
-			
-def itemsSortKey(item):
-	return item.getItemName()
-	
-def buildItems(transactions = transactions,
-			   itemStatsFromIiqr = itemStatsFromIiqr):
-	"""
-	Reads list of Transaction objects.
-	Builds Item objects and returns a list of these,
-	which is sorted in order of item name.  
-	
-	Inputs:
-	transactions 		- list, list of Transaction objects
-	itemStatsFromIiqr	- list, a list of tuples taking the form			
-								(itemName, itemDesc, value, qty)
-								 where value is a subset of 
-								 ["Tot On Hand"
-								 , "Tot On Sales Order"
-								 , "Tot On Purchase Order"]
-	
-	Returns:
-	items 			- list, list of Item objects, which is sorted in order of item name
-	"""
-	# print itemStatsFromIiqr
-	# assert False 
-	
-	items = []
-
-	itemNames =[]
-	for t in transactions:
-				
-		# Create item and populate with first transaction. 
-		if not t.getItemName() in itemNames:
-			itemNames.append(t.getItemName())
-			newItem = Item(t.getItemName(), t.getItemDesc())
-			newItem.addXaction(t)
-			items.append(newItem)
-
-		# add transaction to existing Item
-		else:
-			for item in items:
-				if item.getItemName() == t.getItemName():
-					item.addXaction(t)
-					break
-					
-	for itemStatFromIiqr in itemStatsFromIiqr:
-
-		itemName = itemStatFromIiqr[0]
-		itemDesc = itemStatFromIiqr[1]
-		value = itemStatFromIiqr[2]
-		qty = itemStatFromIiqr[3]
-		
-		# add itemStat to existing item
-		for item in items:		
-			if item.getItemName() == itemName\
-			   and item.getItemDesc() == itemDesc:
-
-				item.setItemStatsFromIiqr(value, qty)
-				# break # leave this for loop
-	
-	# return a sorted list 
-	ret = sorted(items, key=itemsSortKey) # new list
-	
-	return ret
-
-items = buildItems()
+items = functions.buildItems.buildItems(
+							transactions = transactions,
+							itemStatsFromIiqr = itemStatsFromIiqr)
 print "buildItems() yields", len(items), "items"
 # limit = 10
 # for item in items:
@@ -443,129 +49,10 @@ print "buildItems() yields", len(items), "items"
 # print "buildItems() yields", len(items), "items"
 # assert False
 
-
-def readissbi(filename = "issbi.csv", items = items):
-	""" 
-	Reads a qb generated report. 
-
-	Updates item objects with item reorder point.
-	
-	Inputs:
-	filename	- str, filename of quickbooks generated report, 
-					 inventory stock status by item
-	items	 	- list, a list of item objects to be updated.	
-	"""
-	
-	with open(filename, 'rb') as f:
-		reader = csv.reader(f)
-		for row in reader:
-
-			# itemName and description in 1st column 
-			itemEnd = row[0].find("(")-1	
-			itemName = row[0][:itemEnd]		
-			itemDesc = row[0][itemEnd+2:-1]
-
-			# roPoint in 3rd column
-			roPoint = row[2]
-		
-			# select relevant Item object and set RO point
-			for item in items:
-				if item.getItemName() == itemName:
-					try:
-						item.setItemStatsFromIssbi(roPoint)
-					except:
-						pass
-						# print "\nin readissbi()",itemName, itemDesc, roPoint
-
-			
-	# for index in range(len(itemNames)):
-		# print "\n\n", index, "  ",  itemNames[index]
-		# print itemDescs[index]
-		# print roPoints[index]
-	
-	# assert False
-	
-
-		
-
-readissbi()
+functions.readissbi.readissbi(filename = "issbi.csv", items = items)
 # for item in items:
 	# print item
 # assert False
-	
-class Bom(object):
-	""" Holds an item and items required to build that item"""
-	def __init__(self, asy, desc, tNum = ''):
-		"""
-		Inputs:
-		self	- object, BOM object
-		asy		- str, item name
-		asyDesc - str, description of item
-		tNum 	- str, the transaction number upon which this	
-					   BOM is built
-		"""
-		assert type(asy) == str
-		self.asy = asy 
-		self.desc = desc
-		self.tNum = tNum
-		self.items = []
-		self.descs = []
-		self.qtys = []
-		self.levels = [] 
-	def getAsyName(self):
-		return self.asy
-	def getAsyDesc(self):
-		return self.desc
-	def addItem(self, item, desc, qty, level):
-		self.items.append(item)
-		self.descs.append(desc)
-		self.qtys.append(str(abs(float(qty))))
-		self.levels.append(level)
-		assert len(self.items) == len(self.descs)
-		assert len(self.items) == len(self.qtys)
-		assert len(self.items) == len(self.levels)
-	def getSorted_tuples(self):
-		""" returns a list of tuples sorted by item name
-		"""
-		bomItem_tuples =[] 
-		for row in range(len(self.items)):
-			bomItem_tuples.append((
-						   self.qtys[row][:6],
-						   self.levels[row],
-						   self.items[row],
-						   self.descs[row][:40]
-						   ))
-		sortedBomItem_tuples = sorted(bomItem_tuples,
-							key=lambda item: item[2]) #sort by item	
-		return sortedBomItem_tuples
-	def __str__(self):
-		ret = "-----------------------------------------------\n"
-		# ret += "BOM for: "
-		ret += self.asy + " (" + self.desc + ")\n" 
-		ret += "\t\t\t\t\t(built from Transaction #" + self.tNum +")\n"
-		ret += "Qty \t level item \t description\n"
-		ret +="--------------------------------------------------"
-		
-		# 
-		sortedBomItem_tuples = self.getSorted_tuples() 
-		# for row in range(len(self.items)):
-			# bomItem_tuples.append((
-						   # self.qtys[row][:6],
-						   # self.levels[row],
-						   # self.items[row],
-						   # self.descs[row][:40]
-						   # ))
-		# sortedBomItem_tuples = sorted(bomItem_tuples,
-							# key=lambda item: item[2]) #sort by item	
-		
-		for row in range(len(self.items)):
-			ret += "\n"
-			ret += sortedBomItem_tuples[row][0] + " \t"
-			ret += sortedBomItem_tuples[row][1] + " "
-			ret += sortedBomItem_tuples[row][2] + " ("
-			ret += sortedBomItem_tuples[row][3] + " ..."
-		ret += "\n\n"
-		return ret	
 	
 			 
 def buildItemBoms(trans = transactions, items = items):
@@ -590,7 +77,7 @@ def buildItemBoms(trans = transactions, items = items):
 		transNum = itemCreatingTransaction.getTnum()
 		transQty = itemCreatingTransaction.getQty()
 		itemName = itemCreatingTransaction.getItemDesc()
-		bom = Bom(itemName, itemName, transNum)		
+		bom = classes.bom.Bom(itemName, itemName, transNum)		
 		level = "."
 		for t in trans:
 			# disregard unless a build
@@ -614,41 +101,6 @@ for item in items:
 		count += 1
 print "buildItemBoms yields", count, "bills of materials"		
 # assert False
-
-class IndentedBom(object):
-	def __init__(self):
-		"""
-		Inputs:
-		self	-	object, IndentedBom object
-		"""
-		self.items =[]
-		
-	def addItem(self,T):
-		"""
-		Inputs:
-		T		- tuple, item's variables
-				  
-		example: 
-		T = (itemQty, itemLevel, itemName, itemDesc)
-		"""
-		self.items.append(T)
-		
-	def getItems(self):
-		return self.items
-	
-	def __str__(self):
-		ret = "-----------------------------------------------\n"
-		ret += "Indented Bill of Materials: \n"
-		ret += "qty 	level	item	(description  snipped \n"
-		ret +="--------------------------------------------------"
-		for item in self.items:
-			ret += "\n"
-			ret += item[0] + " \t"
-			ret += item[1] + " "
-			ret += item[2] + " ("
-			ret += item[3] + " ..."
-		ret += "\n\n"
-		return ret			
 
 
 def buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='1', 
@@ -737,7 +189,7 @@ def buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='1',
 	ret = allInIndentedBom[:]
 	# print "\n\nret:", ret
 	
-	indentedBom = IndentedBom()
+	indentedBom = classes.indentedBom.IndentedBom()
 	for item in items:
 		if item.getItemName() == asyName:
 			for indentedItem in ret:
@@ -942,7 +394,7 @@ def addItemPhantoms(items = items):
 					phantomQty = str(float(itemQty) * float(itemInIbom[0]))[:4]
 					phantomItemName = itemInIbom[2]
 					phantomDesc = itemInIbom[3]
-					phantomSale = transaction.Transaction(phantomItemName, phantomDesc, 
+					phantomSale = classes.transaction.Transaction(phantomItemName, phantomDesc, 
 											  itemTnum, itemType, itemDate,
 											  itemNum,	phantomQty, itemSO, 
 											  itemInvoiceSaleDate)	
@@ -1097,7 +549,7 @@ def testTotal():
 		num = "num" + str(day)
 		qty = str(1)
 		soNum = "soNum" + str(day)
-		transactions.append(Transaction(item, desc, tNum, type, dte,
+		transactions.append(classes.transaction.Transaction(item, desc, tNum, type, dte,
 							num, qty, soNum, soDte=None))
 	
 	dayStart = datetime.date.fromordinal(10)
@@ -1376,7 +828,7 @@ def max10day(transactions, dateStart, dateEnd):
 class ItemStats(object):
 	def __init__(self, item, transactions):
 
-		assert type(item) == Item
+		assert type(item) == classes.item.Item
 
 		# Make this object callable from the Item object & self
 		item.setItemStats(self) 

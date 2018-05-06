@@ -1,0 +1,10 @@
+# .gitignore
+
+# exclude inputs
+*.CSV
+
+# ignore outputs
+/itemFiles
+
+# ignore compiled outputs
+*.pyc
