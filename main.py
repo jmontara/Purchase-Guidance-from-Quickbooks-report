@@ -22,9 +22,11 @@ import datetime
 import classes.transaction 
 import classes.item 
 import classes.bom 
+import classes.indentedBom
 
 # functions
 import functions.readiiqr
+
 
 
 transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()	
@@ -204,41 +206,6 @@ for item in items:
 print "buildItemBoms yields", count, "bills of materials"		
 # assert False
 
-class IndentedBom(object):
-	def __init__(self):
-		"""
-		Inputs:
-		self	-	object, IndentedBom object
-		"""
-		self.items =[]
-		
-	def addItem(self,T):
-		"""
-		Inputs:
-		T		- tuple, item's variables
-				  
-		example: 
-		T = (itemQty, itemLevel, itemName, itemDesc)
-		"""
-		self.items.append(T)
-		
-	def getItems(self):
-		return self.items
-	
-	def __str__(self):
-		ret = "-----------------------------------------------\n"
-		ret += "Indented Bill of Materials: \n"
-		ret += "qty 	level	item	(description  snipped \n"
-		ret +="--------------------------------------------------"
-		for item in self.items:
-			ret += "\n"
-			ret += item[0] + " \t"
-			ret += item[1] + " "
-			ret += item[2] + " ("
-			ret += item[3] + " ..."
-		ret += "\n\n"
-		return ret			
-
 
 def buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='1', 
 				   items=items, level=''):
@@ -326,7 +293,7 @@ def buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='1',
 	ret = allInIndentedBom[:]
 	# print "\n\nret:", ret
 	
-	indentedBom = IndentedBom()
+	indentedBom = classes.indentedBom.IndentedBom()
 	for item in items:
 		if item.getItemName() == asyName:
 			for indentedItem in ret:
