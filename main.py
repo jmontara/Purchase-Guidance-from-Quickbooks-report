@@ -36,6 +36,7 @@ transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()
 items = functions.buildItems.buildItems(
 							transactions = transactions,
 							itemStatsFromIiqr = itemStatsFromIiqr)
+
 print "buildItems() yields", len(items), "items"
 # limit = 10
 # for item in items:
