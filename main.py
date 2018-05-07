@@ -28,6 +28,7 @@ import functions.buildItems
 import functions.buildItemBoms
 import functions.buildItemIndentedBoms
 import functions.writeItemFiles
+import functions.setTransactionSaleDate
 
 
 transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()	
@@ -37,7 +38,7 @@ items = functions.buildItems.buildItems(
 							transactions = transactions,
 							itemStatsFromIiqr = itemStatsFromIiqr)
 
-print "buildItems() yields", len(items), "items"
+# print "buildItems() yields", len(items), "items"
 # limit = 10
 # for item in items:
 	# print "item name & desc:", item.getItemName(), item.getItemDesc()
@@ -56,8 +57,6 @@ functions.readissbi.readissbi(filename = "issbi.csv",
 	# print item
 # assert False
 	
-			 
-
 
 functions.buildItemBoms.buildItemBoms(trans = transactions, 
 									  items = items)
@@ -70,49 +69,15 @@ functions.buildItemBoms.buildItemBoms(trans = transactions,
 # assert False
 
 
-
 functions.buildItemIndentedBoms.buildItemIndentedBoms(items = items)
 # for item in items:
 	# print item.getIbom()
 # assert False
 
-def setTransactionSaleDate(transactions = transactions):
-	"""
-	Updates Transaction objects that are of type "Invoice" 
-	with the date of the sales order associated with the invoice.
-	
-	Returns a list of these updated Transaction objects.
-	
-	Inputs:
-	transactions	- list, list of Transaction objects
-	
-	Outputs:
-	invoiceTransactions = list, list of updated Transaction objects
-	"""
-		
-	salesOrders = {}
-	ret = []
 
-	for transaction in transactions:
-		if transaction.getType() == "Sales Order":
-			salesOrders[transaction.getNum()] = transaction.getDate()
-
-	for transaction in transactions:
-		if transaction.getType() == "Invoice":
-			try:
-				transaction.setInvoiceSaleDate(salesOrders[transaction.getSoNum()])
-				ret.append(transaction)
-			except:
-				print "\nwarning, this invoice transaction has no sales order number in available data"
-				print "warning, substituting invoice date as an approximation for sale date"
-				print "warning, Doing this puts some sales into a different calendar year. "
-				transaction.setInvoiceSaleDate(transaction.getDate())
-				print transaction
-				ret.append(transaction)
-				
-	return ret
-	
-invoiceTransactions = setTransactionSaleDate()
+invoiceTransactions = functions.\
+					  setTransactionSaleDate.\
+					  setTransactionSaleDate(transactions = transactions)
 # limit = 500
 # for t in invoiceTransactions:
 	# print "invoice transaction with sale date:", t
