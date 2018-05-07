@@ -22,7 +22,7 @@ def writeItemFiles(items, outDir):
 
 	for item in items:
 
-		#if char in outFileName is not allowed, 
+		#if char in outFileName is not allowed,
 		# replace it with _
 		# outFileName = ''
 		outFileName = '.\itemFiles\\'
