@@ -2,8 +2,6 @@
 
 import classes.item 
 
-def itemsSortKey(item):
-	return item.getItemName()
 	
 def buildItems(transactions, itemStatsFromIiqr):
 	"""
@@ -64,3 +62,7 @@ def buildItems(transactions, itemStatsFromIiqr):
 	ret = sorted(items, key=itemsSortKey) # new list
 	
 	return ret
+
+
+def itemsSortKey(item):
+	return item.getItemName()

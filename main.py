@@ -20,14 +20,16 @@ import datetime
 
 # classes 
 import classes.transaction 
-import classes.bom 
-import classes.indentedBom
 
 # functions
 import functions.readiiqr
 import functions.readissbi
 import functions.buildItems
-
+import functions.buildItemBoms
+import functions.buildItemIndentedBoms
+import functions.writeItemFiles
+import functions.setTransactionSaleDate
+import functions.addItemPhantoms
 
 
 transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()	
@@ -36,7 +38,8 @@ transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr()
 items = functions.buildItems.buildItems(
 							transactions = transactions,
 							itemStatsFromIiqr = itemStatsFromIiqr)
-print "buildItems() yields", len(items), "items"
+
+# print "buildItems() yields", len(items), "items"
 # limit = 10
 # for item in items:
 	# print "item name & desc:", item.getItemName(), item.getItemDesc()
@@ -49,288 +52,33 @@ print "buildItems() yields", len(items), "items"
 # print "buildItems() yields", len(items), "items"
 # assert False
 
-functions.readissbi.readissbi(filename = "issbi.csv", items = items)
+functions.readissbi.readissbi(filename = "issbi.csv", 
+							  items = items)
 # for item in items:
 	# print item
 # assert False
 	
-			 
-def buildItemBoms(trans = transactions, items = items):
-	""" 
-	Reads list of transactions and items.  Updates items with
-	a bill of materials.
-	
-	Inputs:
-	trans		- list, list of Transaction objects
-	items		- list, list of Item objects
 
-	"""
-	for item in items:
-		
-		itemCreatingTransaction = item.getItemCreatingTransaction()
-		# skip item if not an assembly		
-		if itemCreatingTransaction == None:
-			continue
-
-		
-		itemName = itemCreatingTransaction.getItemName()
-		transNum = itemCreatingTransaction.getTnum()
-		transQty = itemCreatingTransaction.getQty()
-		itemName = itemCreatingTransaction.getItemDesc()
-		bom = classes.bom.Bom(itemName, itemName, transNum)		
-		level = "."
-		for t in trans:
-			# disregard unless a build
-			if not t.getType() == "Build Assembly":
-				continue
-			# disregard unless lower asy 
-			if not float(t.getQty()) < 0:
-				continue				
-			if t.getTnum() == transNum:
-				itemQty = float(t.getQty())/float(transQty)
-				itemQty = str(itemQty)[:5]
-				bom.addItem(t.getItemName(), t.getItemDesc(), 
-							itemQty, level)	
-		item.setBom(bom)
-
-buildItemBoms()
-count = 0
-for item in items:
-	if not item.getBom() == None:
+functions.buildItemBoms.buildItemBoms(trans = transactions, 
+									  items = items)
+# count = 0
+# for item in items:
+	# if not item.getBom() == None:
 		# print item.getBom()
-		count += 1
-print "buildItemBoms yields", count, "bills of materials"		
+		# count += 1
+# print "buildItemBoms yields", count, "bills of materials"		
 # assert False
 
 
-def buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='1', 
-				   items=items, level=''):
-	"""
-	Gives a indented lists of BOMs, which display the 
-	assembly and every part and quantity of each lower
-	level of assembly.
-
-	Inputs:
-	asyName	- str, name of assembly 
-	asyQty	- str, quantity of assembly for which to construct BOM
-	boms	- list, list of all BOM objects
-	level 	- str, indicates level of indentation of asyName
-	
-	Outputs:
-	all		- list, list of (qty, level, item, description)
-			  including quantity, level, itemName , and itemDesc 
-			  of the item and every item in the asy.
-			
-	"""
-	
-	def getIbom(asyName='BP-2000-MP-4', asyQty='1', 
-				   items=items, level=''):
-		"""
-		helper function.
-		
-		iBom	- list, list of (qty, level, item, description)
-		  including each quantity, level, item, and description
-		  of every item in the asyName. 
-		"""		   
-		global allInIndentedBom 
-
-		for item in items:
-			if item.getItemName() == asyName:
-				asyDesc = item.getItemDesc()
-				break
-		
-		allInIndentedBom += [(asyQty, level, asyName, asyDesc)]
-		
-		# base case of recursive calls
-		# return when asyName does not match an item that is an assembly
-		asyDesc = None
-		for item in items:
-			itemCreatingTransaction = item.getItemCreatingTransaction()
-			if itemCreatingTransaction == None:
-				continue
-			itemName = itemCreatingTransaction.getItemName()
-			itemDesc = itemCreatingTransaction.getItemDesc()
-			if asyName == itemName:
-				asyDesc = itemDesc
-				thisBomContent = item.getBom().getSorted_tuples()
-				break
-		if asyDesc == None:
-			asyDesc = "item description goes here" 
-			L = [(asyQty, level, asyName, asyDesc)]
-			return L
-			
-		else: 
-			T =(asyQty, level, asyName, asyDesc)
-			level += "."
-			# for each item 
-			for item in thisBomContent:
-				itemQty = str(float(item[0]) * float(asyQty))
-				itemName = item[2]
-				itemDesc = item[3]
-				# recursively call to find the base case		
-				L = getIbom(itemName, itemQty, 
-									  items, level)
-				# if the base case is not found
-				if L == None:
-					print "error: found no base case in buildItemIndentedBom"
-					assert False
-				else:
-					# print "\nreturn from base case with L:	 ", L
-					L = [T] + L
-					
-				# after reaching the base case and prepending any tuples
-			return L
-
-	# print "\n\nentering function:", asyName, asyQty, items, level
-	global allInIndentedBom
-	allInIndentedBom =[]
-	getIbom(asyName, asyQty, items, level)
-	# copy of global
-	ret = allInIndentedBom[:]
-	# print "\n\nret:", ret
-	
-	indentedBom = classes.indentedBom.IndentedBom()
-	for item in items:
-		if item.getItemName() == asyName:
-			for indentedItem in ret:
-				indentedBom.addItem(indentedItem)
-			item.setIndentedBom(indentedBom)
-	return ret
-
-# asyName='BP-2000-MP-4'	
-# print "\nbuildItemIndentedBom(*,*,*,..):"
-# buildItemIndentedBom(asyName='BP-2000-MP-4', asyQty='2', 
-					# items=items, level='')				   
-# for item in items:
-	# if item.getItemName() == asyName:
-		# print item.getIbom()
-		
-	
-def buildItemIndentedBoms(items = items):
-	"""
-	builds Indented bills of materials for each item 
-	in items list, and updates the item accordingly.
-	"""
-	for item in items:
-		itemName = item.getItemName()
-		buildItemIndentedBom(asyName=itemName,
-							 asyQty='1',
-							 items=items,
-							 level ="")
-
-buildItemIndentedBoms()
-
+functions.buildItemIndentedBoms.buildItemIndentedBoms(items = items)
 # for item in items:
 	# print item.getIbom()
 # assert False
 
-def writeItemFiles(items = items, outDir = 'itemFiles'):		
-	"""
-	Export item indented boms to csv files 	
-	Export item.__str__() to file
-	
-	Inputs:
-	items - list, list of item objects
-	outDir - str, directory where output files are written
-			 assumes this is directory is already created
-	
-	Outputs:
-	files showing indented boms having the name similar to item.getItemName()
-	files showing item.__str__()
-	
-	"""
- 
-	allowedFileNameChars ="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"
-	
-	for item in items:
-		
-		#if char in outFileName is not allowed, 
-		# replace it with _
-		# outFileName = ''
-		outFileName = '.\itemFiles\\'
-		# outFileName = '.\' + outDir + '\\'
-		for char in item.getItemName():
-			if char in allowedFileNameChars:
-				outFileName += char
-			else:
-				outFileName += '_'
-		# outFileName += '.csv'
-		outFileName = outFileName + '-ibom.csv'
-		
-		with open(outFileName, 'wb') as f:
-			csv_writer = csv.writer(f)
-			# header row
-			qty = "qty"
-			level = "level"
-			itemName = "itemName"
-			itemDesc = "itemDesc"
-			csv_writer.writerow([qty, level, itemName, itemDesc]) 
-			for indentedItem in item.getIbom().getItems():
-				qty = indentedItem[0]
-				level = indentedItem[1]
-				itemName = indentedItem[2]
-				itemDesc = indentedItem[3]				
-				csv_writer.writerow([qty, level, itemName, itemDesc]) 
-		# assert False
-		#if char in outFileName is not allowed, 
-		# replace it with _
-		# outFileName = ''
-		outFileName = '.\itemFiles\\'
-		# outFileName = '.\' + outDir + '\\'
-		for char in item.getItemName():
-			if char in allowedFileNameChars:
-				outFileName += char
-			else:
-				outFileName += '_'
-		# outFileName += '.csv'
-		outFileName = outFileName + '-summary.txt'
-		
-		with open(outFileName, "w") as text_file:
-			text_file.write(item.__str__())
-		# assert False
 
-# writeItemFiles()
-# assert False
-
-
-
-def setTransactionSaleDate(transactions = transactions):
-	"""
-	Updates Transaction objects that are of type "Invoice" 
-	with the date of the sales order associated with the invoice.
-	
-	Returns a list of these updated Transaction objects.
-	
-	Inputs:
-	transactions	- list, list of Transaction objects
-	
-	Outputs:
-	invoiceTransactions = list, list of updated Transaction objects
-	"""
-		
-	salesOrders = {}
-	ret = []
-
-	for transaction in transactions:
-		if transaction.getType() == "Sales Order":
-			salesOrders[transaction.getNum()] = transaction.getDate()
-
-	for transaction in transactions:
-		if transaction.getType() == "Invoice":
-			try:
-				transaction.setInvoiceSaleDate(salesOrders[transaction.getSoNum()])
-				ret.append(transaction)
-			except:
-				print "\nwarning, this invoice transaction has no sales order number in available data"
-				print "warning, substituting invoice date as an approximation for sale date"
-				print "warning, Doing this puts some sales into a different calendar year. "
-				transaction.setInvoiceSaleDate(transaction.getDate())
-				print transaction
-				ret.append(transaction)
-				
-	return ret
-	
-invoiceTransactions = setTransactionSaleDate()
+invoiceTransactions = functions.\
+					  setTransactionSaleDate.\
+					  setTransactionSaleDate(transactions = transactions)
 # limit = 500
 # for t in invoiceTransactions:
 	# print "invoice transaction with sale date:", t
@@ -339,157 +87,12 @@ invoiceTransactions = setTransactionSaleDate()
 		# break
 # assert False
 		
-def addItemPhantoms(items = items):			
-	"""
-	Looks at every item's transactions and, if a transaction 
-	is of type "Invoice", adds a Transaction of type 
-	"Phantom Sale" to each item in the item's indented bill of materials.	
-	
-	Looks at every item's self.totSO and, if not None and non-zero, adds
-	a relevant quantity to the phantomSOqty of each item 
-	in the item's indented bill of materials.	
-	
-	Looks at every item's self.totOH and, if not None and non-zero, adds
-	a relevant quantity to the phantomOHqty of each item 
-	in the item's indented bill of materials.
-	
-	Looks at every item's self.roPoint and, if not None and non-zero, adds
-	a relevant quantity to the phantomROpoint of each item 
-	in the item's indented bill of materials. 
-		
-	Outputs:
-	phantomSales - list, list of Transactions of type "Phantom Sale"
-	"""
-	
-	phantomSales = []
-	
-	#Item name to object lookup dictionary
-	itemName2Object = {}
-	for item in items:
-		itemName2Object[item.getItemName()] = item
-	
 
-	for item in items:
-	
-		# item's transactions 
-		itemTransactions = item.getXactions()
-		for itemTransaction in itemTransactions:
-			if itemTransaction.getType() == "Invoice":
-			
-
-				itemQty = itemTransaction.getQty()
-				itemTnum = itemTransaction.getTnum()
-				itemType = "Phantom Sale"
-				itemDate = itemTransaction.getDate()
-				itemNum = itemTransaction.getNum()
-				itemQty = itemTransaction.getQty()
-				itemSO	= itemTransaction.getSoNum()
-				itemInvoiceSaleDate = itemTransaction.getInvoiceSaleDate()	
-				
-				# Items in iBom include the item and, if the item is an
-				# assembly, all items required to build the item.
-				itemsInIbom = item.getIbom().getItems()
-				for itemInIbom in itemsInIbom:
-					
-					phantomQty = str(float(itemQty) * float(itemInIbom[0]))[:4]
-					phantomItemName = itemInIbom[2]
-					phantomDesc = itemInIbom[3]
-					phantomSale = classes.transaction.Transaction(phantomItemName, phantomDesc, 
-											  itemTnum, itemType, itemDate,
-											  itemNum,	phantomQty, itemSO, 
-											  itemInvoiceSaleDate)	
-						
-					itemName2Object[phantomItemName].addXaction(phantomSale)
-					phantomSales.append(phantomSale)
-					
-					
-	# item's totSO
-	for item in items:				
-		
-		# skip item if it has no open Sales Orders
-		if item.getTotSO() == None:
-			continue 
-		epsilon = 0.01
-		if 0.0 + epsilon > abs(float(item.getTotSO())):
-			continue
-		
-		itemsInIbom = item.getIbom().getItems()		
-		for itemInIbom in itemsInIbom:
-			phantomItemName = itemInIbom[2]
-			phantomSOqty = item.getTotSO() * float(itemInIbom[0])
-			itemName2Object[phantomItemName].addPhantomSOqty(phantomSOqty)
-		
-			# print "\n", item.getItemName(),
-			# print item.getTotSO()
-			# print phantomItemName,
-			# print itemInIbom[0]
-			# print "mult:", item.getTotSO() * float(itemInIbom[0])
-
-	# item's totOH
-	for item in items:				
-		
-		# skip item if it has no OH inventory
-		if item.getTotOH() == None:
-			continue 
-		epsilon = 0.01
-		if 0.0 + epsilon > abs(float(item.getTotOH())):
-			continue
-			
-		# otherwise, add value of the top assembly
-		# to each item in the top assembly's indented bill of materials					
-		itemsInIbom = item.getIbom().getItems()		
-		for itemInIbom in itemsInIbom:
-			phantomItemName = itemInIbom[2]
-			phantomOHqty = item.getTotOH() * float(itemInIbom[0])
-			itemName2Object[phantomItemName].addPhantomOHqty(phantomOHqty)
-	
-	# item's roPoint
-	for item in items:				
-		
-		# skip item if it has no or zero RO point
-		if item.getROpoint() == None:
-			continue 
-		epsilon = 0.01
-		if 0.0 + epsilon > abs(float(item.getROpoint())):
-			continue
-		
-		# otherwise, add value of the top assembly
-		# to each item in the top assembly's indented bill of materials
-		itemsInIbom = item.getIbom().getItems()		
-		for itemInIbom in itemsInIbom:
-			phantomItemName = itemInIbom[2]
-			phantomROpoint = item.getROpoint() * float(itemInIbom[0])
-			itemName2Object[phantomItemName].addPhantomROpoint(phantomROpoint)
-	
-	# item's upper level assy's
-	for item in items:
-		
-		# Skip item if it's indented bill of materials contains
-		# only one entry.
-		if len(item.getIbom().getItems()) < 2:
-			continue
-			
-		# otherwise, add name of the top assembly
-		# to each item in the top assembly's indented bill of materials.
-		itemsInIbom = item.getIbom().getItems()
-		for itemInIbom in itemsInIbom:
-			phantomItemName = itemInIbom[2]
-			itemName2Object[phantomItemName].addUpperAssy(item.getItemName())
-			
-			# print "\n", phantomItemName
-			# print item.getItemName()
-		# print item.getIbom()
-		# print item.getUpperAssyNames()
-		# print itemName2Object['BP-Elastic-M-1/4-Balloons'].getUpperAssyNames()
-		# assert False
-	
-				
-	return phantomSales	
-
-phantomSales = addItemPhantoms()
+phantomSales = functions.\
+			   addItemPhantoms.\
+			   addItemPhantoms(items = items)
 # print "itemHistories:", itemHistories
-
-print "phantomSales() yields", len(phantomSales), "transactions"
+# print "phantomSales() yields", len(phantomSales), "transactions"
 # limit = 1000
 # for transaction in phantomSales:
 	# print "phantomSales", transaction
@@ -1101,7 +704,9 @@ writeItemSales()
 		# print item.getXactionsStr()
 
 
-writeItemFiles()		
+functions.writeItemFiles.writeItemFiles(
+										items = items, 
+										outDir = 'itemFiles')		
 		
 # if __name__ == main:
 	# print "hey"
