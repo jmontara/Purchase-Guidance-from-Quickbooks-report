@@ -312,7 +312,26 @@ class Item(object):
 			return abs(self.getPhantomSOqty())\
 				   - abs(self.getPhantomOHqty())\
 				   + abs(self.getPhantomROpoint())\
-	
+
+	def getExpediteQty(self):
+		"""
+		Returns quantity that must be expedited to fill Open
+		Sales orders.
+
+		If the return is a negative value, no
+		purchase is required.
+		
+		If the return is a positive value,
+		purchase of the returned quantity is required 
+		
+		"""
+		# return a negative value for non-purchased items.
+		if not self.isPurchased():
+			return -1.0
+
+		# item created by purchase order transaction
+		return abs(self.getPhantomSOqty())\
+			   - abs(self.getPhantomOHqty())\
 		
 	def getTotPO(self):
 		"""returns quantity on open PO """

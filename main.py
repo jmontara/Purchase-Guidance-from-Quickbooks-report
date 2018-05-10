@@ -139,6 +139,16 @@ for item in items:
 		countItemsToPurchase += 1
 print "Purchase of ", countItemsToPurchase, "item(s) required to fill Sales Orders and Maintain RO point"
 
+print "\nExpediting of items on expisting Purchase Orders is required to build Sales Orders:"
+countItemsToExpedite = 0
+for item in items:
+	if item.getExpediteQty() > -0.0:
+		expediteQty = item.getExpediteQty()
+		print "  expedite qty ", expediteQty, " of ", item.getItemName(),
+		print " ", item.getItemDesc()
+		countItemsToExpedite += 1
+print "Expedite of ", countItemsToExpedite, "item(s) is required;  These items are on Purchase orders and the quantity listed above must be received prior to build of Sales Orders."
+
 print "\nPurchase required to fill Sales Orders:"
 countItemsToPurchase = 0
 for item in items:
@@ -147,8 +157,7 @@ for item in items:
 		print "  Purchase qty ", purchQty, " of ", item.getItemName(),
 		print " ", item.getItemDesc()
 		countItemsToPurchase += 1
-print "purchase of ", countItemsToPurchase, "item(s) is required to build open SOs"
-
+print "Purchase of ", countItemsToPurchase, "item(s) is required to build open Sales Orders.  "
 
 print "\nOpen purchase orders exist for the following items:"
 countItemsPurchased = 0
@@ -158,7 +167,7 @@ for item in items:
 		print "  Purchased qty ", purchQty, " of ", item.getItemName(),
 		print " ", item.getItemDesc()
 		countItemsPurchased += 1
-print "receipt of", countItemsPurchased, " item(s) is expected; these items have been purchased"
+print "Receipt of", countItemsPurchased, " item(s) is expected; these items have been purchased"
 
 print "\nThe following items have negative quantities:"
 countItemsToBuild = 0
