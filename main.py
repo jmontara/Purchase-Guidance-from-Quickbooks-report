@@ -1,4 +1,4 @@
-# filename:  purchaseG.py
+# filename:  main.py
 
 ### Purchase Guidance takes data from reports generated in
 ### QuickBooks and transforms data into information:
@@ -7,11 +7,18 @@
 ###		Inventory Item Quick Report (iiqr.csv)
 ###		Inventory Status by Item (issbi.csv)
 ###		Purchases by Item Detail (pbid.csv)
+### locations for input files:
+iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
  
 ### Data Output (flat files and/or print to console):
 ###   	Indented Bills of Materials
 ###		Sales history
 ###		Purchase Guidance
+### locations for output files:
+purchaseguidanceLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+itemFilesOutDir = 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+
 
 # standard library
 import csv
@@ -35,8 +42,7 @@ import functions.itemStatsFxns
 import functions.checkTotOH
 # import functions.writepurchasetriggerfile
 
-iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
-issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+
 
 
 
@@ -60,7 +66,6 @@ items = functions.buildItems.buildItems(
 # print "buildItems() yields", len(items), "items"
 # assert False
 
-issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
 functions.readissbi.readissbi(filename = issbiLocation, 
 							  items = items)
 # for item in items:
@@ -139,7 +144,6 @@ print "\nThere are ", count, "inventory items."
 ###  Write file summarizing purchasing guidance
 ### 
 
-outFileName = 'purchaseguidance.txt'
 str = "\nPurchases required to fill Sales Orders and Maintain RO point:"
 
 print "\nPurchases required to fill Sales Orders and Maintain RO point:"
@@ -216,7 +220,7 @@ print "QB inventory adjust or logical build could correct negative counts of:", 
 str += "\nQB inventory adjust or logical build could correct"
 str += " negative counts of " + countItemsToBuild.__repr__() + " item(s)\n"		
 
-with open(outFileName, "w") as text_file:
+with open(purchaseguidanceLocation, "w") as text_file:
 	text_file.write(str)
 
 
@@ -261,7 +265,7 @@ writeItemSales()
 
 functions.writeItemFiles.writeItemFiles(
 										items = items, 
-										outDir = 'itemFiles')		
+										outDir = itemFilesOutDir)		
 
 functions.checkTotOH.checkTotOH(items = items)	
 			
