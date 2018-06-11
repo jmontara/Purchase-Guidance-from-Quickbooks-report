@@ -62,10 +62,11 @@ def check_repeat_report(path,
 if (__name__ == '__main__'):
 	
 	# to test uncomment this block
-	print "To test this program, modify launchMainTest.foo"
-	print "and examine output.\n\n"
-	check_repeat_report(path='./launchMainTest.foo')
+	# print "To test this program, modify launchMainTest.foo"
+	# print "and examine output.\n\n"
+	# check_repeat_report(path='./launchMainTest.foo')
 	
 	
+	iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
 	
-	
+	check_repeat_report(path = iiqrLocation)

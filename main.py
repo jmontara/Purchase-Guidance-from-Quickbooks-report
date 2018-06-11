@@ -139,7 +139,7 @@ for item in items:
 		countItemsToPurchase += 1
 print "Purchase of ", countItemsToPurchase, "item(s) required to fill Sales Orders and Maintain RO point"
 
-print "\nExpediting of items on expisting Purchase Orders is required to build Sales Orders:"
+print "\nExpedite of item(s) on Purchase Orders is required to build Sales Orders:"
 countItemsToExpedite = 0
 for item in items:
 	if item.getExpediteQty() > -0.0:
@@ -149,7 +149,7 @@ for item in items:
 		countItemsToExpedite += 1
 print "Expedite of ", countItemsToExpedite, "item(s) is required;  These items are on Purchase orders and the quantity listed above must be received prior to build of Sales Orders."
 
-print "\nPurchase required to fill Sales Orders:"
+print "\nPurchase of item(s) is required to fill Sales Orders:"
 countItemsToPurchase = 0
 for item in items:
 	if item.getPurchase1() > -0.0:
