@@ -6,6 +6,7 @@
 import time
 import os
 
+import main # launch script on entry
 
 
 def filetime(path): 	
@@ -21,16 +22,16 @@ def filetime(path):
 	
 	"""
 	try: 
-		ret = os.path.getmtime(path)
+		return os.path.getmtime(path)
 	except: 
-		ret = 0.0
-	return ret
+		return 0.0
 
-def check_repeat_report(path='./launchMainTest.foo',
+
+def check_repeat_report(path,
 						sleepSeconds=2):
 	""" 
-	Check for newly created input file, report check, launch
-	main.py when found, and repeat.	
+	Check for newly created input file,  
+	launch main.py when found, and repeat.	
 	
 	Inputs:
 	path 			- string, representation of path and filename
@@ -38,7 +39,7 @@ def check_repeat_report(path='./launchMainTest.foo',
 	"""
 	
 	indent = ''
-	fileTime = 0.0 
+	fileTime = filetime(path) 
 	while True:
 		
 		if indent == '.....':
@@ -54,16 +55,17 @@ def check_repeat_report(path='./launchMainTest.foo',
 		newFileTime = filetime(path)
 		
 		if newFileTime>fileTime:
-			print "newFileTime>fileTime; new file to be parsed"
+			print newFileTime,">",fileTime, "new file to be parsed"
 			fileTime = newFileTime
+			reload(main)
 
 if (__name__ == '__main__'):
-	# execute as standalone using >python launchMain.py
 	
-	print filetime(path='./launchMainTest.foo')
-	check_repeat_report()
+	# to test uncomment this block
+	print "To test this program, modify launchMainTest.foo"
+	print "and examine output.\n\n"
+	check_repeat_report(path='./launchMainTest.foo')
 	
-
 	
 	
 	
