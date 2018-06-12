@@ -11,6 +11,8 @@ def writeItemFiles(items, outDir):
 	items - list, list of item objects
 	outDir - str, directory where output files are written
 			 assumes this is directory is already created
+			 example:
+			 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
 	
 	Outputs:
 	files showing indented boms having the name similar to item.getItemName()
@@ -25,7 +27,8 @@ def writeItemFiles(items, outDir):
 		#if char in outFileName is not allowed,
 		# replace it with _
 		# outFileName = ''
-		outFileName = '.\itemFiles\\'
+		outFileName = outDir
+		# outFileName = '.\itemFiles\\'
 		# outFileName = '.\' + outDir + '\\'
 		for char in item.getItemName():
 			if char in allowedFileNameChars:
@@ -34,6 +37,7 @@ def writeItemFiles(items, outDir):
 				outFileName += '_'
 		# outFileName += '.csv'
 		outFileName = outFileName + '-ibom.csv'
+
 
 		with open(outFileName, 'wb') as f:
 			csv_writer = csv.writer(f)
@@ -53,7 +57,7 @@ def writeItemFiles(items, outDir):
 		#if char in outFileName is not allowed, 
 		# replace it with _
 		# outFileName = ''
-		outFileName = '.\itemFiles\\'
+		outFileName = outDir
 		# outFileName = '.\' + outDir + '\\'
 		for char in item.getItemName():
 			if char in allowedFileNameChars:
@@ -66,3 +70,14 @@ def writeItemFiles(items, outDir):
 		with open(outFileName, "w") as text_file:
 			text_file.write(item.__str__())
 		# assert False
+
+if __name__ == '__main__':
+	
+	# for test: write file to desired directory
+	itemFilesOutDir = 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+	outFileName = itemFilesOutDir + 'xyzAbc'
+	with open(outFileName, "w") as text_file:
+		text_file.write('xyz ABC output file')
+
+	
+	
