@@ -7,18 +7,25 @@
 ###		Inventory Item Quick Report (iiqr.csv)
 ###		Inventory Status by Item (issbi.csv)
 ###		Purchases by Item Detail (pbid.csv)
-### locations for input files:
+
+### comment/uncomment file location to run on different machines
+### locations for input files on laptop:
 iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
 issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+### location for input files on desktop
+iiqrLocation = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+issbiLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
  
 ### Data Output (flat files and/or print to console):
 ###   	Indented Bills of Materials
 ###		Sales history
 ###		Purchase Guidance
-### locations for output files:
+### locations for output files on laptop:
 purchaseguidanceLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
 itemFilesOutDir = 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
-
+### location for output files on desktop
+purchaseguidanceLocation ='C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+itemFilesOutDir = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
 
 # standard library
 import csv
