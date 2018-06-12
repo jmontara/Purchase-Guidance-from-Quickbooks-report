@@ -56,10 +56,13 @@ def check_repeat_report(path,
 		
 		if newFileTime>fileTime:
 			print newFileTime,">",fileTime, "new file to be parsed"
+			print "/n/nparsing", path
+			time.sleep(sleepSeconds)
 			fileTime = newFileTime
 			reload(main)
 
 if (__name__ == '__main__'):
+
 	
 	# to test uncomment this block
 	# print "To test this program, modify launchMainTest.foo"
@@ -67,6 +70,19 @@ if (__name__ == '__main__'):
 	# check_repeat_report(path='./launchMainTest.foo')
 	
 	
+	### locations for input files on laptop:
 	iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+	issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+	### locations for output files on laptop:
+	purchaseguidanceLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+	itemFilesOutDir = 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+
+	### location for input files on desktop
+	iiqrLocation = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+	issbiLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+	### location for output files on desktop
+	purchaseguidanceLocation ='C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+	itemFilesOutDir = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+		
 	
 	check_repeat_report(path = iiqrLocation)
