@@ -73,6 +73,8 @@ def readiiqr(filename = "iiqr.csv"):
 				type = row[2]
 				dte = row[3]
 				num = row[4]
+				name = row[5]
+				memo = row[6]
 				qty = row[7]
 				so = row[9]			
 			else:
@@ -84,13 +86,13 @@ def readiiqr(filename = "iiqr.csv"):
 			
 			#create Transaction and append to transactions
 			transactions.append(classes.transaction.Transaction(itemName, itemDesc, tran, type, 
-								 dte, num, qty, so))	
+								 dte, num, qty, so, name, memo))	
 				
 	return transactions, itemStatsFromIiqr
 
 
 ## Multiple iiqr files may be read, due to QuickBooks
-# output csv file #  size limitation.  This is required
+# output csv file #  size limitation.  This is required to
 # read all transactions.  A single file has been seen capable
 # of storing greater than 15,000 transactions, which
 # equates to more than 3 years of transactions for some

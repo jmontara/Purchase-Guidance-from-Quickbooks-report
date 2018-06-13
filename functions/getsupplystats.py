@@ -71,9 +71,7 @@ def getshipments(item):
 				print "buy:", buy.getShortStr()
 				print "ship:", ship.getShortStr()
 				print "thisLeadTime:", thisLeadTime, "/n"
-				# print "type(thisLeadTime):", type(thisLeadTime)
 				if zeroLeadTime <= thisLeadTime < leadTime:
-					# possible purchase has shipment arriving after buy
 					leadTime = thisLeadTime
 					buyTransaction = buy
 					shipTransaction = ship
