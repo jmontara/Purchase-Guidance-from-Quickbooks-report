@@ -59,7 +59,8 @@ def addItemPhantoms(items):
 					phantomDesc = itemInIbom[3]
 					phantomSale = classes.transaction.Transaction(phantomItemName, phantomDesc, 
 											  itemTnum, itemType, itemDate,
-											  itemNum,	phantomQty, itemSO, 
+											  itemNum,	phantomQty, itemSO,
+											  "", "",
 											  itemInvoiceSaleDate)	
 						
 					itemName2Object[phantomItemName].addXaction(phantomSale)
