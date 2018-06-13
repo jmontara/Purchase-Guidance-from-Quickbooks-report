@@ -40,8 +40,8 @@ def getshipments(item):
 			shiptransactions.append(transaction)
 		elif type in buytransactionTypes:
 			buytransactions.append(transaction)
-	print "buytransactions:", buytransactions
-	print "shiptransactions:", shiptransactions
+	# print "buytransactions:", buytransactions
+	# print "shiptransactions:", shiptransactions
 	
 	# (1)look at most recent Purchase Order transaction.
 	def getDate(transaction):
@@ -78,12 +78,8 @@ def getshipments(item):
 					
 			shipments.append(Shipment(buyTransaction,shipTransaction))
 
-	
 	return shipments
 		
-
-	
-
 	
 if __name__ == "__main__":
 
@@ -97,73 +93,74 @@ if __name__ == "__main__":
 	import transaction
 	import datetime
 	dte = datetime.date(2018,6,12)
-	t = transaction.Transaction("item", "desc", "tNum", "type", dte, "num","qty","soNum", "soDte")
+	t = transaction.Transaction("item", "desc", "tNum", "type", dte, 
+							"num","qty","soNum", "name","memo", "soDte")
 	print t
 	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2017,7,19)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)		
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2017,11,11)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,11,28)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,11,28)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2018,2,9)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Item Receipt", datetime.date(2018,5,29)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2018,6,1)
-					, "num","11","soNum", "soDte")
+					, "num","11","soNum", "name","memo", "soDte")
 					)	
 
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,5,23)
-					, "num","0","soNum", "soDte")
+					, "num","0","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,9,6)
-					, "num","0","soNum", "soDte")
+					, "num","0","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,10,31)
-					, "num","0","soNum", "soDte")
+					, "num","0","soNum", "name","memo", "soDte")
 					)	
 	item.addXaction(transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2018,4,23)
-					, "num","0","soNum", "soDte")
+					, "num","0","soNum", "name","memo", "soDte")
 					)	
 
 			
