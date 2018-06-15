@@ -27,29 +27,34 @@ class Shipment(object):
 			endTransactionType is "Invoice"
 			returns days between the date of the 
 			Sales Order and the date of the Invoice. 
-			
 		"""
 		return self.time
 		
 	def __str__(self):
-		ret = '\n<Shipment:\n'
+		ret = '<Shipment.' + self.getClass() + ':'
+		ret += '  "' + self.getOrigin() + '" --> "' + self.getDest() + '"\n'
 		ret += ' Lead time (days): ' + self.time.__str__() + '\n'
 		ret += self.start.getShortStr()
 		ret += self.end.getShortStr()
-		ret += ' >'
+		ret = ret[:-1] + '>'
 		return ret
 
 class Buy(Shipment):
-	def getSource(self):
+	def getOrigin(self):
 		return self.start.getName()
 	def getDest(self):
 		return "Manufacturing Warehouse"
+	def getClass(self):
+		return "Buy"
 		
 class Sell(Shipment):
-	def getSource(self):
+	def getOrigin(self):
 		return "Manufacturing Warehouse"
 	def getDest(self):
 		return self.end.getName()
+	def getClass(self):
+		return "Sell"
+		
 		
 def getshipments(items):
 	"""
@@ -125,7 +130,7 @@ def getshipments(items):
 						startTransaction = buy
 						endTransaction = ship
 						
-				buys.append(Shipment(startTransaction,endTransaction))
+				buys.append(Buy(startTransaction,endTransaction))
 				
 		buyShipmentsByItem[item] = buys
 		
@@ -145,90 +150,252 @@ if __name__ == "__main__":
 	import datetime
 	dte = datetime.date(2018,6,12)
 	t = classes.transaction.Transaction("item", "desc", "tNum", "type", dte, 
-							"num","qty","soNum", "name","memo", "soDte")
+							"num","qty","soNum", "Supplier Name","memo", "soDte")
 	print t
 	
-	
+	print "\n\n### test some print statements"
+	print Buy(t,t)
+	print Sell(t,t)	
 	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2017,7,19)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)		
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,10,17)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2017,11,11)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,11,28)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,11,28)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2018,2,9)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Item Receipt", datetime.date(2018,5,29)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Build Assembly", datetime.date(2018,6,1)
-					, "num","11","soNum", "name","memo", "soDte")
+					, "num","11","soNum", "Supplier Name","memo", "soDte")
 					)	
 
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,5,23)
-					, "num","0","soNum", "name","memo", "soDte")
+					, "num","0","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,9,6)
-					, "num","0","soNum", "name","memo", "soDte")
+					, "num","0","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2017,10,31)
-					, "num","0","soNum", "name","memo", "soDte")
+					, "num","0","soNum", "Supplier Name","memo", "soDte")
 					)	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Purchase Order", datetime.date(2018,4,23)
-					, "num","0","soNum", "name","memo", "soDte")
+					, "num","0","soNum", "Supplier Name","memo", "soDte")
 					)	
 
+	### small test using above item				
 	items = [item]
 	
-	# for t in item.getXactions():
-		# print "\n\ntransactions in item:\n"	
-		# print t
-		
+	
+    ############################
+	# UN-COMMENT OUT THE BLOCK OF CODE BELOW TO RUN LARGE TEST
+	############################
+	### larger test using items in iiqr
+	### locations for input files on laptop:
+	iiqrLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+	issbiLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+	### locations for output files on laptop:
+	purchaseguidanceLocation ='C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+	itemFilesOutDir = 'C:\Users\Moore\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+
+	### location for input files on desktop
+	iiqrLocation = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
+	issbiLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+	### location for output files on desktop
+	purchaseguidanceLocation ='C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
+	itemFilesOutDir = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+
+	import functions.readiiqr
+	import functions.readissbi
+	import functions.buildItems
+	import functions.buildItemBoms
+	import functions.buildItemIndentedBoms
+	import functions.writeItemFiles
+	import functions.setTransactionSaleDate
+	import functions.addItemPhantoms
+	import functions.itemStatsFxns
+	import functions.checkTotOH
+
+	transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr(iiqrLocation)	
+
+	items = functions.buildItems.buildItems(
+								transactions = transactions,
+								itemStatsFromIiqr = itemStatsFromIiqr)
+	
+
+	############################
+	# COMMENT OUT THE BLOCK OF CODE ABOVE TO RUN TEST OF SINGLE
+	# ITEM WHOSE TRANSACTIONS ARE DEFINED HEREIN
+	############################
+	
+	# limit to last item
+	# items = items[-1:]
+	
+	print "\n\n### getshipments(items):"
 	buyShipmentsByItem = getshipments(items)
 	
-	print ""
+	# show shipments by item
+	shipments = []
 	for item in buyShipmentsByItem.keys():
-		print "item.getItemName():", item.getItemName()
+		print "\n\nshowing buyShipmentsByItem:"
+		print "\nitem.getItemName():", item.getItemName()
 		for shipment in buyShipmentsByItem[item]:
-			print " shipment:", shipment
+			print shipment
+			shipments.append(shipment)
+			
+	# show shipments by supplier
+	buyShipmentsBySupplier = {}
+	for shipment in shipments:
+		#supplier
+		supplierName = shipment.getOrigin()
+		if supplierName not in buyShipmentsBySupplier.keys():		
+			buyShipmentsBySupplier[supplierName] =\
+				[shipment.getCycleTime()]
+		else:
+			buyShipmentsBySupplier[supplierName] =\
+				buyShipmentsBySupplier[supplierName] +\
+				[shipment.getCycleTime()]
+			
 
+	for supplier in buyShipmentsBySupplier.keys():
+		print "supplier:", supplier, " lead times: ",
+		print buyShipmentsBySupplier[supplier]
+		
 
+	for supplier in buyShipmentsBySupplier.keys():
+
+		leadTimes = buyShipmentsBySupplier[supplier]
+		shipments = 0
+		sumLeadTimes = 0
+		min = 99999999
+		max = -1
+		for leadTime in leadTimes:
+			shipments += 1
+			sumLeadTimes += int(leadTime)
+			if leadTime < min:
+				min = leadTime
+			if leadTime > max:
+				max = leadTime
+		avg = sumLeadTimes / shipments
+		
+		print "\n\n", supplier, 
+		print " cycle times: ",
+		print buyShipmentsBySupplier[supplier],		
+		print "\n lead time stats: ",
+		print " shipments:", shipments, "min:", min, "avg:", avg, "max:", max
+	
+	### 
+	# lec 15 w edits.py ... excerpts from; edited
+	###
+
+	import random, pylab    # see matplotlib.sourceforge.net			
+
+	###
+	#
+	# simple plot
+	#
+	
+	# pylab.figure(1)
+	# pylab.plot([1,2,3], [1,2,3], 'go-', label='line 1', linewidth=2)
+	# pylab.plot([1,2,3], [1,4,9], 'rs-',  label='line 2', linewidth=1)
+	# pylab.legend()
+	# pylab.title('pylab dot title is this')
+	# pylab.xlabel('pylab dot xlabel is this')
+	# pylab.ylabel('pylab dot ylabel is this')
+	# pylab.savefig('pylab_savefig')
+	# pylab.show()
+	
+	def stdDev(X):
+		mean = sum(X)/float(len(X))
+		tot = 0.0
+		for x in X:
+			tot += (x - mean)**2
+		return (tot/len(X))**0.5
+
+	def flip(numFlips):
+		heads = 0.0
+		for i in range(numFlips):
+			if random.random() < 0.5:
+				heads += 1.0
+		return heads/numFlips
+
+	def flipSim(numFlipsPerTrial, numTrials):
+		fracHeads = []
+		for i in range(numTrials):
+			fracHeads.append(flip(numFlipsPerTrial))
+		return fracHeads
+		
+	def labelPlot(nf, nt, mean, sd):
+		pylab.title(str(nt) + ' trials of '
+					+ str(nf) + ' flips each')
+		pylab.xlabel('Fraction of Heads')
+		pylab.ylabel('Number of Trials')
+		xmin, xmax = pylab.xlim()
+		ymin, ymax = pylab.ylim()
+		pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
+				   'Mean = ' + str(round(mean, 6))           # & place text
+				   + '\nSD = ' + str(round(sd, 6)))          # on plot
+	def makePlots(nf1, nf2, nt):
+		""""""
+		fracHeads1 = flipSim(nf1, nt)
+		mean1 = sum(fracHeads1)/float(len(fracHeads1))
+		sd1 = stdDev(fracHeads1)
+		pylab.hist(fracHeads1, bins = 20)              # Histogram!
+		xmin,xmax = pylab.xlim()                #  axis values for current fig
+		ymin,ymax = pylab.ylim()
+		labelPlot(nf1, nt, mean1, sd1)
+		pylab.figure()
+		fracHeads2 = flipSim(nf2, nt)
+		mean2 = sum(fracHeads2)/float(len(fracHeads2))
+		sd2 = stdDev(fracHeads2)
+		pylab.hist(fracHeads2, bins = 20)
+		pylab.hist(fracHeads2, bins = 20)
+		pylab.xlim(xmin, xmax)                    # size the axis unchanged
+		ymin, ymax = pylab.ylim()
+		labelPlot(nf2, nt, mean2, sd2)            # note the placement of legend.	
+	
+	
+	makePlots(50, 200, 100)
+	pylab.show()
+	
 	
