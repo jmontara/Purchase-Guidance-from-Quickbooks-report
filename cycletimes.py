@@ -352,50 +352,51 @@ if __name__ == "__main__":
 			tot += (x - mean)**2
 		return (tot/len(X))**0.5
 
-	def flip(numFlips):
-		heads = 0.0
-		for i in range(numFlips):
-			if random.random() < 0.5:
-				heads += 1.0
-		return heads/numFlips
+	# def flip(numFlips):
+		# heads = 0.0
+		# for i in range(numFlips):
+			# if random.random() < 0.5:
+				# heads += 1.0
+		# return heads/numFlips
 
-	def flipSim(numFlipsPerTrial, numTrials):
-		fracHeads = []
-		for i in range(numTrials):
-			fracHeads.append(flip(numFlipsPerTrial))
-		return fracHeads
+	# def flipSim(numFlipsPerTrial, numTrials):
+		# fracHeads = []
+		# for i in range(numTrials):
+			# fracHeads.append(flip(numFlipsPerTrial))
+		# return fracHeads
 		
-	def labelPlot(nf, nt, mean, sd):
-		pylab.title(str(nt) + ' trials of '
-					+ str(nf) + ' flips each')
-		pylab.xlabel('Fraction of Heads')
-		pylab.ylabel('Number of Trials')
+	def labelPlot(supplier, mean, sd):
+		pylab.title(str(supplier) + ' (' + str(len(supplier)) + ' Shipments) ')
+		pylab.xlabel('Cycle Time (days)')
+		pylab.ylabel('Number of Shipments')
 		xmin, xmax = pylab.xlim()
 		ymin, ymax = pylab.ylim()
 		pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
 				   'Mean = ' + str(round(mean, 6))           # & place text
 				   + '\nSD = ' + str(round(sd, 6)))          # on plot
-	def makePlots(nf1, nf2, nt):
-		""""""
-		fracHeads1 = flipSim(nf1, nt)
-		mean1 = sum(fracHeads1)/float(len(fracHeads1))
-		sd1 = stdDev(fracHeads1)
-		pylab.hist(fracHeads1, bins = 20)              # Histogram!
+				   
+	def makePlot(supplier, leadtimes):
+		""""""	
+		pylab.hist(leadtimes, bins = 80)        # Histogram!
 		xmin,xmax = pylab.xlim()                #  axis values for current fig
 		ymin,ymax = pylab.ylim()
-		labelPlot(nf1, nt, mean1, sd1)
-		pylab.figure()
-		fracHeads2 = flipSim(nf2, nt)
-		mean2 = sum(fracHeads2)/float(len(fracHeads2))
-		sd2 = stdDev(fracHeads2)
-		pylab.hist(fracHeads2, bins = 20)
-		pylab.hist(fracHeads2, bins = 20)
-		pylab.xlim(xmin, xmax)                    # size the axis unchanged
-		ymin, ymax = pylab.ylim()
-		labelPlot(nf2, nt, mean2, sd2)            # note the placement of legend.	
+		
+		sd = stdDev(leadtimes)
+		mean = sum(leadtimes)/float(len(leadtimes))
+		labelPlot(supplier, mean, sd)
+		# pylab.figure()
 	
-	
-	makePlots(50, 200, 100)
+	# plot first supplier in list along with relevant shipments
+	supplier = buyShipmentsBySupplier.keys()[0]
+	leadTimes = buyShipmentsBySupplier[supplier]
+	# relevant shipments
+	print "\n\nsupplier name:", supplier
+	print "leadTimes:", leadTimes
+	print "\n Plot of histograms fails to make sense !"
+	print "try printing each buy from the supplier"
+	print "maybe need to refactor buyShipmentsBySupplier"
+	# 
+	makePlot(supplier, leadTimes)
 	pylab.show()
 	
 	
