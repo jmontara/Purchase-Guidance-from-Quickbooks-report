@@ -19,20 +19,23 @@ class Shipment(object):
 		end transaction.  
 		Example:
 			startTransaction Type "Purchase Order"
-			endTransaction Type is "Bill"
+			endTransaction Type "Bill"
 			returns days between the date of the Bill
 			and the date of the Purchase Order.
 		Example:
 			startTransaction Type "Sales Order"
-			endTransactionType is "Invoice"
+			endTransactionType "Invoice"
 			returns days between the date of the 
 			Sales Order and the date of the Invoice. 
 		"""
 		return self.time
-		
+	def getOrigin(self):
+		return self.origin
+	def getDestination(self):
+		return self.destination
 	def __str__(self):
 		ret = '<Shipment.' + self.getClass() + ':'
-		ret += '  "' + self.getOrigin() + '" --> "' + self.getDest() + '"\n'
+		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
 		ret += ' Lead time (days): ' + self.time.__str__() + '\n'
 		ret += self.start.getShortStr()
 		ret += self.end.getShortStr()
@@ -40,21 +43,55 @@ class Shipment(object):
 		return ret
 
 class Buy(Shipment):
-	def getOrigin(self):
-		return self.start.getName()
-	def getDest(self):
-		return "Manufacturing Warehouse"
+	def __init__(self,startTransaction,endTransaction):
+		Shipment.__init__(self,startTransaction,endTransaction)
+		self.origin = startTransaction.getName() # supplier name
+		self.destination = "Manufacturing Warehouse"
+		self.item = startTransaction.getItemName()
+		# self.category =
 	def getClass(self):
 		return "Buy"
+
+# class Buys(object):
+	# def __init__(self, buyShipmentsByItem):
+		# self.byItem = buyShipmentsByItem # dict
+		
+		# self.bySupplier = {}
+		# shipments = []
+		# for item in self.byItem.keys():
+
+			# for shipment in self.byItem[item]:
+
+				# shipments.append(shipment)
+				
+		# for shipment in shipments:
+
+			# supplierName = shipment.getOrigin()
+			
+			# if supplierName not in bySupplier.keys():		
+				# bySupplier[supplierName] =\
+					# [shipment.getCycleTime()]
+			# else:
+				# bySupplier[supplierName] =\
+					# bySupplier[supplierName] +\
+					# [shipment.getCycleTime()]
+		
+	# def getbuys(self):
+		# """ gives list all buy objects"""
+		# ret = []
+		# for item in self.byItem.keys():
+			# for shipment in buyItems[item]:
+				# ret.append(shipment)
+				
+			
 		
 class Sell(Shipment):
-	def getOrigin(self):
-		return "Manufacturing Warehouse"
-	def getDest(self):
-		return self.end.getName()
+	def __init__(self,startTransaction,endTransaction):
+		Shipment.__init__(self,startTransaction,endTransaction)
+		self.destination = startTransaction.getName()
+		self.origin = "Manufacturing Warehouse"
 	def getClass(self):
-		return "Sell"
-		
+		return "Buy"
 		
 def getshipments(items):
 	"""
@@ -155,7 +192,7 @@ if __name__ == "__main__":
 	
 	print "\n\n### test some print statements"
 	print Buy(t,t)
-	print Sell(t,t)	
+	# print Sell(t,t)	
 	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
@@ -273,6 +310,7 @@ if __name__ == "__main__":
 	
 	print "\n\n### getshipments(items):"
 	buyShipmentsByItem = getshipments(items)
+	# buys = Buys(buyShipmentsByItem)
 	
 	# show shipments by item
 	shipments = []
