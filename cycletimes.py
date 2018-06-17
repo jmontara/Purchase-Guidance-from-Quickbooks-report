@@ -12,7 +12,7 @@ class Shipment(object):
 		self.end = endTransaction
 		# difference in days between start and end
 		diff = endTransaction.getDate() - startTransaction.getDate()
-		self.time = diff.days
+		self.cycleTime = diff.days
 	def getCycleTime(self):
 		""" 
 		returns the time between start transaction and
@@ -28,15 +28,17 @@ class Shipment(object):
 			returns days between the date of the 
 			Sales Order and the date of the Invoice. 
 		"""
-		return self.time
+		return self.cycleTime
+	def getItemName(self):
+		return self.start.getItemName()
 	def getOrigin(self):
 		return self.origin
 	def getDestination(self):
 		return self.destination
 	def __str__(self):
-		ret = '<Shipment.' + self.getClass() + ':'
+		ret = '<Shipment,' + self.getClass() + ':'
 		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
-		ret += ' Lead time (days): ' + self.time.__str__() + '\n'
+		ret += ' Lead time (days): ' + self.cycleTime.__str__() + '\n'
 		ret += self.start.getShortStr()
 		ret += self.end.getShortStr()
 		ret = ret[:-1] + '>'
@@ -52,38 +54,37 @@ class Buy(Shipment):
 	def getClass(self):
 		return "Buy"
 
-# class Buys(object):
-	# def __init__(self, buyShipmentsByItem):
-		# self.byItem = buyShipmentsByItem # dict
+class Buys(object):
+	def __init__(self, buyShipmentsByItem):
+		self.byItem = buyShipmentsByItem # dict
+		self.bySupplier = self.populatebySupplier()
 		
-		# self.bySupplier = {}
-		# shipments = []
-		# for item in self.byItem.keys():
+	def getall(self):
+		""" 
+		gives list of all buy objects
+		"""
+		ret = []
+		for item in self.byItem.keys():
+			for buy in self.byItem[item]:
+				ret.append(buy)
+		return ret
 
-			# for shipment in self.byItem[item]:
-
-				# shipments.append(shipment)
-				
-		# for shipment in shipments:
-
-			# supplierName = shipment.getOrigin()
-			
-			# if supplierName not in bySupplier.keys():		
-				# bySupplier[supplierName] =\
-					# [shipment.getCycleTime()]
-			# else:
-				# bySupplier[supplierName] =\
-					# bySupplier[supplierName] +\
-					# [shipment.getCycleTime()]
+	def getbyItem(self):
+		return self.byItem		
+	
+	def populatebySupplier(self):
+		ret = {}
+		for buy in self.getall():
+			supplierName = buy.getOrigin()
+			if supplierName not in ret.keys():		
+				ret[supplierName] =	[buy]
+			else:
+				ret[supplierName] =	ret[supplierName] +	[buy]
+		return ret
+	
+	def getbySupplier(self):
+		return self.bySupplier
 		
-	# def getbuys(self):
-		# """ gives list all buy objects"""
-		# ret = []
-		# for item in self.byItem.keys():
-			# for shipment in buyItems[item]:
-				# ret.append(shipment)
-				
-			
 		
 class Sell(Shipment):
 	def __init__(self,startTransaction,endTransaction):
@@ -95,35 +96,17 @@ class Sell(Shipment):
 		
 def getshipments(items):
 	"""
-	returns dictionaries of objects
+	returns dictionary
 	
 	Inputs:
 	items - list of item objects
 	
 	Outputs:
-	A tuple of dictionaries pointing to shipments,
 	buyShipmentsByItem 
 				example: {item: [shipment1, shipment2, shipment3]}
-	buyShipmentsBySupplier
-				example: {supplier: [shipment1, shipment2, shipment3]}
-	buyShipmentsByCategory
-				example: {category: [shipment1, shipment2, shipment3]}				
-	sellShipmentsByItem
-				example: {item: [shipment1, shipment2, shipment3]}
-	sellShipmentsByCustomer
-				example: {customer: [shipment1, shipment2, shipment3]}
-	sellShipmentsByCategory
-				example: {category: [shipment1, shipment2, shipment3]}
-				  
-	"""
-	#(4) use (2) to populate buyShipmentsBySupplier
-	##(5) use (2) to populate buyShipmentsByCategory
-	##(6) use (1) to populate sellShipmentsByItem
-	##(7) use (6) to populate sellShipmentsByCustomer
-	##(8) use (6) to populate sellShipmentsByCategory
-	##(9) generate summary stats like samples, lead times, covariance 		
-	
+	"""	
 	buyShipmentsByItem = {}
+	# and a subsequent ending transaction is expected  
 	buyStartTransactionTypes = ['Purchase Order']
 	buyEndTransactionTypes = ['Bill', 'Item Receipt']
 
@@ -133,11 +116,18 @@ def getshipments(items):
 		buys = []
 		for transaction in item.getXactions():
 			type = transaction.getType()
-			if type in buyStartTransactionTypes:
+			qty = transaction.getQty()
+			if type in buyStartTransactionTypes\
+				and qty == '0':
 				startTransactions.append(transaction)
-			elif type in buyEndTransactionTypes:
+				# print transaction, "\ntype,qty:", type, qty, "\n"
+				# assert False
+			elif type in buyEndTransactionTypes\
+				and not(qty == '0'):
 				endTransactions.append(transaction)
-		
+				# print transaction, "\ntype,qty:", type, qty, "\n"
+				# assert False		
+				
 		# look at most recent start transaction.
 		def getDate(transaction):
 			return transaction.getDate()
@@ -150,26 +140,36 @@ def getshipments(items):
 									   reverse=True)
 									   
 		for buy in sortedStartTransactions:
-			# If received, the quantity will be zero
-			# and a subsequent Item Receipt or Bill is expected.
+
 			if buy.getQty() == '0':
 			
 				buyDte = buy.getDate()
 				
+				# get the most recent end transaction
 				leadTime = datetime.timedelta(999)
 				for ship in sortedEndTransactions:
 					shipDte = ship.getDate()
-					thisLeadTime = shipDte - buyDte 
+					thisLeadTime = shipDte - buyDte
+					
 					zeroLeadTime = shipDte - shipDte
-
 					if zeroLeadTime <= thisLeadTime < leadTime:
 						leadTime = thisLeadTime
 						startTransaction = buy
 						endTransaction = ship
+
+				# scrub transactions entered with error:
+				# <Shipment,Buy:  "Logic Hydraulic Controls Inc" --> "Manufacturing Warehouse"
+					 # Lead time (days): 90
+					 # <xaction:  Pump, Air, 230V, Air Compressor, 230V, 27745, Purchase Order, 2015-01-20, 2043, 0, , Logic Hydraulic Controls Inc, Air Compressor, 230V>
+					 # <xaction:  Pump, Air, 230V, Air Compressor, 230V, 28541, Bill, 2015-04-20, 60621, 7, , Logic Hydraulic Controls Inc, Air Compressor, 230V>>
+				if leadTime.days >89:
+					continue
 						
 				buys.append(Buy(startTransaction,endTransaction))
-				
-		buyShipmentsByItem[item] = buys
+		
+		# only make entries if there are buys
+		if len(buys)>0:
+			buyShipmentsByItem[item] = buys
 		
 	return buyShipmentsByItem
 		
@@ -301,8 +301,8 @@ if __name__ == "__main__":
 	
 
 	############################
-	# COMMENT OUT THE BLOCK OF CODE ABOVE TO RUN TEST OF SINGLE
-	# ITEM WHOSE TRANSACTIONS ARE DEFINED HEREIN
+	# COMMENT OUT THE ABOVE BLOCK OF CODE TO RUN TEST OF SINGLE
+	# ITEM WHOSE TRANSACTIONS ARE DEFINED ABOVE
 	############################
 	
 	# limit to last item
@@ -310,7 +310,6 @@ if __name__ == "__main__":
 	
 	print "\n\n### getshipments(items):"
 	buyShipmentsByItem = getshipments(items)
-	# buys = Buys(buyShipmentsByItem)
 	
 	# show shipments by item
 	shipments = []
@@ -320,6 +319,7 @@ if __name__ == "__main__":
 		for shipment in buyShipmentsByItem[item]:
 			print shipment
 			shipments.append(shipment)
+	# assert False
 			
 	# show shipments by supplier
 	buyShipmentsBySupplier = {}
@@ -339,29 +339,6 @@ if __name__ == "__main__":
 		print "supplier:", supplier, " lead times: ",
 		print buyShipmentsBySupplier[supplier]
 		
-
-	for supplier in buyShipmentsBySupplier.keys():
-
-		leadTimes = buyShipmentsBySupplier[supplier]
-		shipments = 0
-		sumLeadTimes = 0
-		min = 99999999
-		max = -1
-		for leadTime in leadTimes:
-			shipments += 1
-			sumLeadTimes += int(leadTime)
-			if leadTime < min:
-				min = leadTime
-			if leadTime > max:
-				max = leadTime
-		avg = sumLeadTimes / shipments
-		
-		print "\n\n", supplier, 
-		print " cycle times: ",
-		print buyShipmentsBySupplier[supplier],		
-		print "\n lead time stats: ",
-		print " shipments:", shipments, "min:", min, "avg:", avg, "max:", max
-	
 	### 
 	# lec 15 w edits.py ... excerpts from; edited
 	###
@@ -372,7 +349,6 @@ if __name__ == "__main__":
 	#
 	# simple plot
 	#
-	
 	# pylab.figure(1)
 	# pylab.plot([1,2,3], [1,2,3], 'go-', label='line 1', linewidth=2)
 	# pylab.plot([1,2,3], [1,4,9], 'rs-',  label='line 2', linewidth=1)
@@ -403,8 +379,8 @@ if __name__ == "__main__":
 			# fracHeads.append(flip(numFlipsPerTrial))
 		# return fracHeads
 		
-	def labelPlot(supplier, mean, sd):
-		pylab.title(str(supplier) + ' (' + str(len(supplier)) + ' Shipments) ')
+	def labelPlot(supplier, samples, mean, sd):
+		pylab.title(str(supplier) + ' (' + samples + ' Shipments) ')
 		pylab.xlabel('Cycle Time (days)')
 		pylab.ylabel('Number of Shipments')
 		xmin, xmax = pylab.xlim()
@@ -414,27 +390,65 @@ if __name__ == "__main__":
 				   + '\nSD = ' + str(round(sd, 6)))          # on plot
 				   
 	def makePlot(supplier, leadtimes):
-		""""""	
-		pylab.hist(leadtimes, bins = 80)        # Histogram!
+		"""
+		plots histogram of supplier delivery cycle times
+		
+		requires executing pylab.show() after calling this function
+		
+		Inputs:
+		supplier 	- str, supplier name
+		leadtimes	- list, list of ints, cycle times for supplier
+		
+		"""	
+		pylab.hist(leadtimes, bins = 8)        # Histogram!
 		xmin,xmax = pylab.xlim()                #  axis values for current fig
 		ymin,ymax = pylab.ylim()
 		
+		samples = str(len(leadtimes))
 		sd = stdDev(leadtimes)
 		mean = sum(leadtimes)/float(len(leadtimes))
-		labelPlot(supplier, mean, sd)
+		labelPlot(supplier, samples, mean, sd)
 		# pylab.figure()
 	
-	# plot first supplier in list along with relevant shipments
-	supplier = buyShipmentsBySupplier.keys()[0]
-	leadTimes = buyShipmentsBySupplier[supplier]
-	# relevant shipments
-	print "\n\nsupplier name:", supplier
-	print "leadTimes:", leadTimes
-	print "\n Plot of histograms fails to make sense !"
-	print "try printing each buy from the supplier"
-	print "maybe need to refactor buyShipmentsBySupplier"
-	# 
-	makePlot(supplier, leadTimes)
-	pylab.show()
+	def getsort(shipment):
+		""" 
+		gives something used in sort.
+		Question:  inaccessible class Shipment function getCycleTime
+		"""
+		cyclestring = shipment.getCycleTime()
+		ret = str(shipment.getCycleTime())
+		for i in range(10 - len(ret)):
+			ret = " " + ret
+		# ret += shipment.getItemName()
+		ret = shipment.getCycleTime()
+		return ret
+	
+	def showPlots(dict):
+		""" 
+		print data and plot histograms for each supplier 
+		requires closing the plot to advance to the next supplier
+		
+		inputs:
+		dict 	- dictionary, ie, Buys.getbyItem(), Buys.getbySupplier()
+		"""
+		for key in dict.keys():
+			shipments = dict[key]
+			sortedshipments = sorted(shipments, key=getsort)		
+			print "\nsortedshipments:", sortedshipments
+			cycleTimes = []
+			for shipment in sortedshipments:
+				print shipment
+				cycleTimes.append(shipment.getCycleTime())	
+			
+			makePlot(key, cycleTimes)
+			pylab.show()
+			
+	buys = Buys(buyShipmentsByItem)
+	# all = buys.getall()
+	# byItem = buys.getbyItem()
+	# bySupplier = buys.getbySupplier()			
+	showPlots(buys.getbySupplier())
+			
+	
 	
 	
