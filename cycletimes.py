@@ -114,6 +114,9 @@ def getshipments(items):
 		startTransactions = []
 		endTransactions = []
 		buys = []
+		# print "item:", item
+		# print "item.getItemName():", item.getItemName()
+		# assert False
 		for transaction in item.getXactions():
 			type = transaction.getType()
 			qty = transaction.getQty()
@@ -157,7 +160,7 @@ def getshipments(items):
 						startTransaction = buy
 						endTransaction = ship
 
-				# scrub transactions entered with error:
+				# scrub transaction(s) entered with error:
 				# <Shipment,Buy:  "Logic Hydraulic Controls Inc" --> "Manufacturing Warehouse"
 					 # Lead time (days): 90
 					 # <xaction:  Pump, Air, 230V, Air Compressor, 230V, 27745, Purchase Order, 2015-01-20, 2043, 0, , Logic Hydraulic Controls Inc, Air Compressor, 230V>
@@ -168,8 +171,9 @@ def getshipments(items):
 				buys.append(Buy(startTransaction,endTransaction))
 		
 		# only make entries if there are buys
+		itemName = item.getItemName()
 		if len(buys)>0:
-			buyShipmentsByItem[item] = buys
+			buyShipmentsByItem[itemName] = buys
 		
 	return buyShipmentsByItem
 		
@@ -315,7 +319,6 @@ if __name__ == "__main__":
 	shipments = []
 	for item in buyShipmentsByItem.keys():
 		print "\n\nshowing buyShipmentsByItem:"
-		print "\nitem.getItemName():", item.getItemName()
 		for shipment in buyShipmentsByItem[item]:
 			print shipment
 			shipments.append(shipment)
@@ -447,7 +450,8 @@ if __name__ == "__main__":
 	# all = buys.getall()
 	# byItem = buys.getbyItem()
 	# bySupplier = buys.getbySupplier()			
-	showPlots(buys.getbySupplier())
+	# showPlots(buys.getbySupplier())
+	showPlots(buys.getbyItem())
 			
 	
 	
