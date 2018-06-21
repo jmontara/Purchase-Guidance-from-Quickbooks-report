@@ -93,10 +93,47 @@ class Sell(Shipment):
 		self.origin = "Manufacturing Warehouse"
 	def getClass(self):
 		return "Buy"
+	def getDestination(self):
+		return self.destination
+		
+class Sells(object):
+	def __init__(self, sellShipmentsByItem):
+		self.byItem = sellShipmentsByItem # dict
+		self.byCustomer = self.populatebyCustomer()
+		
+	def getall(self):
+		""" 
+		gives list of all sell objects
+		"""
+		ret = []
+		for item in self.byItem.keys():
+			for sell in self.byItem[item]:
+				ret.append(sell)
+		return ret
+
+	def getbyItem(self):
+		return self.byItem		
+	
+	def populatebyCustomer(self):
+		ret = {}
+		for sell in self.getall():
+			customerName = sell.getDestination()
+			if customerName not in ret.keys():		
+				ret[customerName] =	[sell]
+			else:
+				ret[customerName] =	ret[customerName] +	[sell]
+		return ret
+	
+	def populatebyCategory(self):
+		
+		pass
+	
+	def getbyCustomer(self):
+		return self.byCustomer
 		
 def getshipments(items):
 	"""
-	returns dictionary
+	returns dictionary of shipments of items from suppliers
 	
 	Inputs:
 	items - list of item objects
@@ -106,7 +143,6 @@ def getshipments(items):
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""	
 	buyShipmentsByItem = {}
-	# and a subsequent ending transaction is expected  
 	buyStartTransactionTypes = ['Purchase Order']
 	buyEndTransactionTypes = ['Bill', 'Item Receipt']
 
@@ -176,7 +212,80 @@ def getshipments(items):
 			buyShipmentsByItem[itemName] = buys
 		
 	return buyShipmentsByItem
+
+def getshipmentscustomer(items):
+	"""
+	returns dictionary of shipments of items to customers
+	
+	Inputs:
+	items - list of item objects
+	
+	Outputs:
+	ret 
+				example: {item: [shipment1, shipment2, shipment3]}
+	"""	
+	ret = {}
+	sellStartTransactionTypes = ['Sales Order']
+	sellEndTransactionTypes = ['Invoice']
+
+	for item in items:
+		startTransactions = []
+		endTransactions = []
+		sells = []
+		# print "item:", item
+		# print "item.getItemName():", item.getItemName()
+		# assert False
+		for transaction in item.getXactions():
+			type = transaction.getType()
+			qty = transaction.getQty()
+			if type in sellStartTransactionTypes\
+				and qty == '0':
+				startTransactions.append(transaction)
+				# print transaction, "\ntype,qty:", type, qty, "\n"
+				# assert False
+			elif type in sellEndTransactionTypes\
+				and not(qty == '0'):
+				endTransactions.append(transaction)
+				# print transaction, "\ntype,qty:", type, qty, "\n"
+				# assert False		
+				
+		# look at most recent start transaction.
+		def getDate(transaction):
+			return transaction.getDate()
+			
+		sortedStartTransactions = sorted(startTransactions, 
+									   key=getDate,
+									   reverse=True)
+		sortedEndTransactions = sorted(endTransactions, 
+									   key=getDate,
+									   reverse=True)
+									   
+		for sale in sortedStartTransactions:
+	
+			saleDte = sale.getDate()
+			
+			# get the most recent end transaction
+			leadTime = datetime.timedelta(999)
+			for ship in sortedEndTransactions:
+				shipDte = ship.getDate()
+				thisLeadTime = shipDte - saleDte
+				
+				zeroLeadTime = shipDte - shipDte
+				if zeroLeadTime <= thisLeadTime < leadTime:
+					leadTime = thisLeadTime
+					startTransaction = sale
+					endTransaction = ship
+
+					
+			sells.append(Sell(startTransaction,endTransaction))
 		
+		# only make entries if there are sells
+		itemName = item.getItemName()
+		if len(sells)>0:
+			ret[itemName] = sells
+		
+	return ret
+			
 	
 if __name__ == "__main__":
 
@@ -269,7 +378,7 @@ if __name__ == "__main__":
 	
 	
     ############################
-	# UN-COMMENT OUT THE BLOCK OF CODE BELOW TO RUN LARGE TEST
+	# UN-COMMENT THE BLOCK OF CODE BELOW TO RUN LARGE TEST
 	############################
 	### larger test using items in iiqr
 	### locations for input files on laptop:
@@ -447,12 +556,102 @@ if __name__ == "__main__":
 			pylab.show()
 			
 	buys = Buys(buyShipmentsByItem)
-	# all = buys.getall()
-	# byItem = buys.getbyItem()
-	# bySupplier = buys.getbySupplier()			
 	# showPlots(buys.getbySupplier())
-	showPlots(buys.getbyItem())
+	# showPlots(buys.getbyItem())
+	sellShipmentsByItem = getshipmentscustomer(items)
+	# print sellShipmentsByItem
+	sells = Sells(sellShipmentsByItem)
+	# showPlots(sells.getbyItem())
+	showPlots(sells.getbyCustomer())
+	
 			
+	### safety stock per http://media.apics.org/omnow/Crack%20the%20Code.pdf
+	
+	
+	# populate item with indented bom
+	# For every invoice transaction for every item (in sells),
+	#   populate a transaction or transactions of type "demanded" 
+	#   Appropriate quantity is a multiple of the quantity on 
+	#    the invoice transaction and the quantity on the bill of materials.
+	#   Appropriate date for transaction is the date of 
+	#	 the sales order associated with the invoice.
+	
+	# populate item with unit price, reorder point
+	
+	# rank items by strategic value, estimated by something like
+	#   itemCostPerYr = avg annual demand * unit cost
+	#   itemCostNowInInventory = current inventory * unit cost
+	#   itemCostAtROPoint 	= reorder point * unit cost
+	# 
+	# Limit to look at 10% most strategic parts.	
+	# plot demand by item histogram 
+	# print 
+	#   As Is: 
+	#    RO Point 
+	#	 * Unit Cost
+	#	 =   
+	#   Calcs:
+	#	PC = 53 days
+	#	itemCycleStock = cs (see below)
+	#	itemSafetyStockDemand = ss (see below) 	
+	#	Proposed:  
+	#	 RO Point = 
+	#	 
+	# Calculate safety stock to accommodate demand variability:
+	# 
+	# per http://media.apics.org/omnow/Crack%20the%20Code.pdf
+	#
+	# ss = safety stock
+	# Z = Z score, 1.65 for 95% cycle 
+	# PC = performance cycle, another term for total lead time 
+	# T1 = time increment used for calculating standard deviation of demand  
+	# thetaD = standard deviation of demand.
+	#
+	# ss = Z * sqrt(PC/T1) * thetaD
+	#
+	# The performance cycle includes the time needed to perform functions 
+	# such as deciding what to order or produce, communicating orders 
+	# to the supplier, manufacturing and processing, and delivery and 
+	# storage, as well as any additional time required to return to the 
+	# start of the next cycle. 	
+	# 
+	# PC time in days, example;
+	# order from supplier = 1
+	# receive from supplier = 30 ; mean cycle time PO to invoice 
+	# transit from supplier = 7 ; ship ground
+	# receive = 1 day
+	# build, test, ship = 14 days
+	# PC = 53
+	#
+	# cs = cycle stock = PC * avg daily demand
+	# 
+	# Z = 1 cycle service level = 84% 
+	# Z = 1.65 cycle service level = 95% 
+	# Note: cycle service level would be significantly 
+	# lower than fill rate where actual purchase quantity is 
+    # significantly higher than cycle stock.
+	# 
+	# 
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 	
 	
 	
