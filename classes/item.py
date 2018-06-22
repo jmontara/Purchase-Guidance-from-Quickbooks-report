@@ -340,18 +340,18 @@ class Item(object):
 		return self.totPO
 
 	def __str__(self):
-		ret = "\n\n<Item: " 
+		ret = "<Item: " 
 		ret += self.itemName  
 		# ret += " (" + self.itemDesc + ")>\n"
 		# ret += self.getIbom().__str__() 
 		# ret += self.getXactionsStr()
 		ret += self.itemStats.__str__()
-		ret += "\nOn Hand: " + self.totOH.__str__()
+		ret += "\n On Hand: " + self.totOH.__str__()
 		ret += "    On Sales Order: " + self.totSO.__str__()
 		ret += "    On Purchase Order: " + self.totPO.__str__()
 		ret += "    RO Point: "   + self.roPoint.__str__()
-		ret += "\nWhere used: " + self.upperAssyNames.__str__()
-		ret += "\nPhantom RO Point: "   + self.phantomROpoint.__str__()
-		ret += "\nPhantom OH: " + self.phantomOHqty.__str__()
-		ret += "\nPhantom SO: " + self.phantomSOqty.__str__()
+		ret += "\n Where used: " + self.upperAssyNames.__str__()
+		ret += "\n Phantom RO Point: "   + self.phantomROpoint.__str__()
+		ret += "\n Phantom OH: " + self.phantomOHqty.__str__()
+		ret += "\n Phantom SO: " + self.phantomSOqty.__str__()
 		return ret

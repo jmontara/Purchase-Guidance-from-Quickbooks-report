@@ -42,7 +42,7 @@ class Shipment(object):
 	def getDestination(self):
 		return self.destination
 	def __str__(self):
-		ret = '<Shipment,' + self.getClass() + ':'
+		ret = '<Shipment, ' + self.getClass() + ':'
 		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
 		ret += ' Lead time (days): ' + self.cycleTime.__str__() + '\n'
 		ret += self.start.getShortStr()
@@ -297,18 +297,15 @@ if __name__ == "__main__":
 
 
 	item = classes.item.Item("test itemName", "test itemDesc")
-	print "*****test item object:", item
+	print "*****item object:", item
 
 	dte = datetime.date(2018,6,12)
 	t = classes.transaction.Transaction("item", "desc", "tNum", "type", dte, 
 							"num","qty","soNum", "Supplier Name","memo", "soDte")
-	print "\n*****test transaction object:", t
+	print "*****transaction object:", t
 	
+	print "*****Buy object:", Buy(t,t)
 	assert False
-	
-	print "\n\n### test some print statements"
-	print Buy(t,t)
-	# print Sell(t,t)	
 	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)

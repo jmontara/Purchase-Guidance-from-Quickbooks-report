@@ -85,7 +85,7 @@ class Transaction(object):
 		ret += " Invoice's S.O #: " + self.soNum + "\n "
 		ret += " Invoice's Sale Date " + self.invoiceSaleDate.__str__() + ">\n "
 		ret += " Xaction Name: " + self.name + "\n "
-		ret += " Xaction Memo:"  + self.memo + "\n"
+		ret += " Xaction Memo:"  + self.memo 
 		return ret
 
 if __name__ == "__main__":
