@@ -1,10 +1,16 @@
-# filename:  cycleTimes.py
+# filename:  cycletimes.py
 
 ### cycle times are :
-### (1) time between placing an order with a supplier and items received
-###     in the warehouse and available to build
-### (2) time between customer placing an order and completed systems
-###     leaving dock and headed to customer.
+### (1) A buy cycle time is the time between writing a purchase order 
+###     for an item and that item being available to build. 
+### (2) A sell cycle time is the time between writing a sales order 
+###     for an item and that item being invoiced. 
+
+import classes.item 
+import classes.transaction
+import datetime
+
+
 
 class Shipment(object):	
 	def __init__(self,startTransaction,endTransaction):
@@ -289,19 +295,16 @@ def getshipmentscustomer(items):
 	
 if __name__ == "__main__":
 
-	# import sys
-	# sys.path.insert(0, '../classes')
 
-	import classes.item 
 	item = classes.item.Item("test itemName", "test itemDesc")
-	print item
+	print "*****test item object:", item
 
-	import classes.transaction
-	import datetime
 	dte = datetime.date(2018,6,12)
 	t = classes.transaction.Transaction("item", "desc", "tNum", "type", dte, 
 							"num","qty","soNum", "Supplier Name","memo", "soDte")
-	print t
+	print "\n*****test transaction object:", t
+	
+	assert False
 	
 	print "\n\n### test some print statements"
 	print Buy(t,t)
