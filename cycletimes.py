@@ -305,7 +305,7 @@ if __name__ == "__main__":
 	print "*****transaction object:", t
 	
 	print "*****Buy object:", Buy(t,t)
-	assert False
+	# assert False
 	
 	item.addXaction(classes.transaction.Transaction("item", "desc", "11", 
 					"Bill", datetime.date(2017,6,19)
