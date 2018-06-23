@@ -150,9 +150,8 @@ for item in items:
 	if item.isPurchased():
 		print item
 		count += 1
-print "\nThere are ", count, "inventory items."
+print "\nThere are ", count, "inventory items that are purchased."
 
-# print "type(functions.writepurchaseguidance):", type(functions.writepurchaseguidance)
 functions.writepurchaseguidance.writepurchaseguidance(items, purchaseguidanceLocation)
 
 
