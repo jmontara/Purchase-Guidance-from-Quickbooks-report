@@ -136,19 +136,23 @@ class Sells(object):
 	
 	def getbyCustomer(self):
 		return self.byCustomer
-		
+		 
 def getshipments(items):
 	"""
-	returns dictionary of shipments of items from suppliers
+	returns dictionary of shipments 
 	
 	Inputs:
-	items - list of item objects
+	items 	- list of item objects
 	
 	Outputs:
 	buyShipmentsByItem 
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""	
 	buyShipmentsByItem = {}
+	# startTransactionTypes 
+			# - list, list of strings describing start transaction types.
+	# endTransactionTypes 
+			# - list, list of strings describing end transaction types.
 	buyStartTransactionTypes = ['Purchase Order']
 	buyEndTransactionTypes = ['Bill', 'Item Receipt']
 
@@ -512,7 +516,7 @@ if __name__ == "__main__":
 		leadtimes	- list, list of ints, cycle times for supplier
 		
 		"""	
-		pylab.hist(leadtimes, bins = 8)        # Histogram!
+		pylab.hist(leadtimes, bins = 8, rwidth = .95)        # Histogram!
 		xmin,xmax = pylab.xlim()                #  axis values for current fig
 		ymin,ymax = pylab.ylim()
 		
@@ -535,13 +539,14 @@ if __name__ == "__main__":
 		ret = shipment.getCycleTime()
 		return ret
 	
-	def showPlots(dict):
+	def showPlots(dict, toTest = True):
 		""" 
 		print data and plot histograms for each supplier 
 		requires closing the plot to advance to the next supplier
 		
 		inputs:
 		dict 	- dictionary, ie, Buys.getbyItem(), Buys.getbySupplier()
+		toTest 	- bol, ie, True returns after plotting the first key in dict.
 		"""
 		for key in dict.keys():
 			shipments = dict[key]
@@ -551,17 +556,20 @@ if __name__ == "__main__":
 			for shipment in sortedshipments:
 				print shipment
 				cycleTimes.append(shipment.getCycleTime())	
-			
+				
 			makePlot(key, cycleTimes)
 			pylab.show()
+			if toTest:
+				return
+			
 			
 	buys = Buys(buyShipmentsByItem)
-	# showPlots(buys.getbySupplier())
-	# showPlots(buys.getbyItem())
+	showPlots(buys.getbySupplier())
+	showPlots(buys.getbyItem())
 	sellShipmentsByItem = getshipmentscustomer(items)
 	# print sellShipmentsByItem
 	sells = Sells(sellShipmentsByItem)
-	# showPlots(sells.getbyItem())
+	showPlots(sells.getbyItem())
 	showPlots(sells.getbyCustomer())
 	
 			
@@ -569,8 +577,8 @@ if __name__ == "__main__":
 	
 	
 	# populate item with indented bom
-	# For every invoice transaction for every item (in sells),
-	#   populate a transaction or transactions of type "demanded" 
+	# For every invoice transaction for every item in demand,
+	#   populate a transaction or transactions of type "demand " 
 	#   Appropriate quantity is a multiple of the quantity on 
 	#    the invoice transaction and the quantity on the bill of materials.
 	#   Appropriate date for transaction is the date of 
