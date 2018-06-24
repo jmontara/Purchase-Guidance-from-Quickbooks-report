@@ -7,24 +7,8 @@ def writepurchaseguidance(items, purchaseguidanceLocation):
 	"""
     Write file summarizing purchasing guidance.  
 	"""
-
-	str = "\n"
-	str += "Purchases required to fill Sales Orders and maintain RO point:"
-	countItemsToPurchase = 0
-	for item in items:
-		if item.getPurchase2() > -0.0:
-			purchQty = item.getPurchase2().__repr__()
-			str += '\n'
-			str += " Purchase qty " + purchQty 
-			str += " of " + item.getItemName() + " (" + item.getItemDesc() +")"
-			countItemsToPurchase += 1
-
-	str += "\n"
-	str += " Purchase of " + countItemsToPurchase.__repr__() 
-	str += " item(s) is required."
-
 	
-	str += "\n\n"
+	str = "\n\n"
 	str += "Expedite of item(s) on Purchase Orders is required to fill Sales Orders:"
 	countItemsToExpedite = 0
 	for item in items:
@@ -37,8 +21,7 @@ def writepurchaseguidance(items, purchaseguidanceLocation):
 	str += "\n"
 	str += " Expedite of " + countItemsToExpedite.__repr__() 
 	str += " item(s) required."
-
-
+	
 	str +="\n\n"
 	str += "Purchase of items(s) required to fill Sales Orders:"
 	countItemsToPurchase = 0
@@ -53,6 +36,21 @@ def writepurchaseguidance(items, purchaseguidanceLocation):
 	str += " Purchase of " + countItemsToPurchase.__repr__() 
 	str += " item(s) required." 
 	
+	str += "\n\n"
+	str += "Purchase of item(s) required to fill Sales Orders and maintain RO point:"
+	countItemsToPurchase = 0
+	for item in items:
+		if item.getPurchase2() > -0.0:
+			purchQty = item.getPurchase2().__repr__()
+			str += '\n'
+			str += " Purchase qty " + purchQty 
+			str += " of " + item.getItemName() + " (" + item.getItemDesc() +")"
+			countItemsToPurchase += 1
+
+	str += "\n"
+	str += " Purchase of " + countItemsToPurchase.__repr__() 
+	str += " item(s) is required."
+
 	str += "\n\n"
 	str += "Open purchase orders exist for the following items:"
 	countItemsPurchased = 0
