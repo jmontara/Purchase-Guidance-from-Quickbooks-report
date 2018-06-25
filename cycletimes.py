@@ -375,7 +375,7 @@ if __name__ == "__main__":
 		# pylab.text(xmin + (xmax-xmin)*0.8, (ymax-ymin)/2,   # locate  
 				   # 'Mean = ' + str(round(mean, 1))           # & place text
 				   # + '\nSD = ' + str(round(sd, 1)))          # on plot
-	def makePlotStartTimes(supplier, startTimes, xlabel = None, bins = None):
+	def makePlotStartTimes(supplier, startTimes, xlabel = None, xmin = None, xmax = None, bins = None):
 		"""
 		plots histogram
 		
@@ -395,6 +395,9 @@ if __name__ == "__main__":
 			bins = len(uniqueBinContent)
 		pylab.hist(startTimes, bins, rwidth = .9)        # Histogram!
 		pylab.xlabel(xlabel)
+		if xmax == None:
+			return
+		pylab.xlim(xmin, xmax)
 		xmin,xmax = pylab.xlim()            #  axis values for current fig
 		ymin,ymax = pylab.ylim()
 		
@@ -444,7 +447,9 @@ if __name__ == "__main__":
 				# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 				# assert False
 			xlabel = 'Year of Supply'
-			makePlotStartTimes(key, startTimes, xlabel = xlabel, bins = 3)				
+			xmin = None #2015
+			xmax = None #2018
+			makePlotStartTimes(key, startTimes, xlabel = xlabel, xmin = xmin, xmax = xmax, bins = 4)				
 
 			# pylab.figure()
 			pylab.subplot(333)
@@ -454,7 +459,9 @@ if __name__ == "__main__":
 				# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 				# assert False
 			xlabel = 'Month of Supply'
-			makePlotStartTimes(key, startTimes, xlabel = xlabel, bins = 12)					
+			xmin = None #1
+			xmax = None #12
+			makePlotStartTimes(key, startTimes, xlabel = xlabel, xmin = xmin, xmax = xmax, bins = 12)					
 			
 			pylab.show()
 			# if toTest:
