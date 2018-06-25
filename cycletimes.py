@@ -19,6 +19,8 @@ class Shipment(object):
 		# difference in days between start and end
 		diff = endTransaction.getDate() - startTransaction.getDate()
 		self.cycleTime = diff.days
+		self.startDateYear = startTransaction.getDate().year
+		self.startDateMonth = startTransaction.getDate().month
 	def getCycleTime(self):
 		""" 
 		returns the time between start transaction and
@@ -41,6 +43,10 @@ class Shipment(object):
 		return self.origin
 	def getDestination(self):
 		return self.destination
+	def getStartDateYear(self):
+		return self.startDateYear
+	def getStartDateMonth(self):
+		return self.startDateMonth
 	def __str__(self):
 		ret = '<Shipment, ' + self.getClass() + ':'
 		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
@@ -136,166 +142,7 @@ class Sells(object):
 	
 	def getbyCustomer(self):
 		return self.byCustomer
-		 
-def getshipments(items):
-	"""
-	returns dictionary of shipments 
-	
-	Inputs:
-	items 	- list of item objects
-	
-	Outputs:
-	buyShipmentsByItem 
-				example: {item: [shipment1, shipment2, shipment3]}
-	"""	
-	buyShipmentsByItem = {}
-	# startTransactionTypes 
-			# - list, list of strings describing start transaction types.
-	# endTransactionTypes 
-			# - list, list of strings describing end transaction types.
-	buyStartTransactionTypes = ['Purchase Order']
-	buyEndTransactionTypes = ['Bill', 'Item Receipt']
 
-	for item in items:
-		startTransactions = []
-		endTransactions = []
-		buys = []
-		# print "item:", item
-		# print "item.getItemName():", item.getItemName()
-		# assert False
-		for transaction in item.getXactions():
-			type = transaction.getType()
-			qty = transaction.getQty()
-			if type in buyStartTransactionTypes\
-				and qty == '0':
-				startTransactions.append(transaction)
-				# print transaction, "\ntype,qty:", type, qty, "\n"
-				# assert False
-			elif type in buyEndTransactionTypes\
-				and not(qty == '0'):
-				endTransactions.append(transaction)
-				# print transaction, "\ntype,qty:", type, qty, "\n"
-				# assert False		
-				
-		# look at most recent start transaction.
-		def getDate(transaction):
-			return transaction.getDate()
-			
-		sortedStartTransactions = sorted(startTransactions, 
-									   key=getDate,
-									   reverse=True)
-		sortedEndTransactions = sorted(endTransactions, 
-									   key=getDate,
-									   reverse=True)
-									   
-		for buy in sortedStartTransactions:
-
-			if buy.getQty() == '0':
-			
-				buyDte = buy.getDate()
-				
-				# get the most recent end transaction
-				leadTime = datetime.timedelta(999)
-				for ship in sortedEndTransactions:
-					shipDte = ship.getDate()
-					thisLeadTime = shipDte - buyDte
-					
-					zeroLeadTime = shipDte - shipDte
-					if zeroLeadTime <= thisLeadTime < leadTime:
-						leadTime = thisLeadTime
-						startTransaction = buy
-						endTransaction = ship
-
-				# scrub transaction(s) entered with error:
-				# <Shipment,Buy:  "Logic Hydraulic Controls Inc" --> "Manufacturing Warehouse"
-					 # Lead time (days): 90
-					 # <xaction:  Pump, Air, 230V, Air Compressor, 230V, 27745, Purchase Order, 2015-01-20, 2043, 0, , Logic Hydraulic Controls Inc, Air Compressor, 230V>
-					 # <xaction:  Pump, Air, 230V, Air Compressor, 230V, 28541, Bill, 2015-04-20, 60621, 7, , Logic Hydraulic Controls Inc, Air Compressor, 230V>>
-				if leadTime.days >89:
-					continue
-						
-				buys.append(Buy(startTransaction,endTransaction))
-		
-		# only make entries if there are buys
-		itemName = item.getItemName()
-		if len(buys)>0:
-			buyShipmentsByItem[itemName] = buys
-		
-	return buyShipmentsByItem
-
-def getshipmentscustomer(items):
-	"""
-	returns dictionary of shipments of items to customers
-	
-	Inputs:
-	items - list of item objects
-	
-	Outputs:
-	ret 
-				example: {item: [shipment1, shipment2, shipment3]}
-	"""	
-	ret = {}
-	sellStartTransactionTypes = ['Sales Order']
-	sellEndTransactionTypes = ['Invoice']
-
-	for item in items:
-		startTransactions = []
-		endTransactions = []
-		sells = []
-		# print "item:", item
-		# print "item.getItemName():", item.getItemName()
-		# assert False
-		for transaction in item.getXactions():
-			type = transaction.getType()
-			qty = transaction.getQty()
-			if type in sellStartTransactionTypes\
-				and qty == '0':
-				startTransactions.append(transaction)
-				# print transaction, "\ntype,qty:", type, qty, "\n"
-				# assert False
-			elif type in sellEndTransactionTypes\
-				and not(qty == '0'):
-				endTransactions.append(transaction)
-				# print transaction, "\ntype,qty:", type, qty, "\n"
-				# assert False		
-				
-		# look at most recent start transaction.
-		def getDate(transaction):
-			return transaction.getDate()
-			
-		sortedStartTransactions = sorted(startTransactions, 
-									   key=getDate,
-									   reverse=True)
-		sortedEndTransactions = sorted(endTransactions, 
-									   key=getDate,
-									   reverse=True)
-									   
-		for sale in sortedStartTransactions:
-	
-			saleDte = sale.getDate()
-			
-			# get the most recent end transaction
-			leadTime = datetime.timedelta(999)
-			for ship in sortedEndTransactions:
-				shipDte = ship.getDate()
-				thisLeadTime = shipDte - saleDte
-				
-				zeroLeadTime = shipDte - shipDte
-				if zeroLeadTime <= thisLeadTime < leadTime:
-					leadTime = thisLeadTime
-					startTransaction = sale
-					endTransaction = ship
-
-					
-			sells.append(Sell(startTransaction,endTransaction))
-		
-		# only make entries if there are sells
-		itemName = item.getItemName()
-		if len(sells)>0:
-			ret[itemName] = sells
-		
-	return ret
-			
 	
 if __name__ == "__main__":
 
@@ -382,7 +229,7 @@ if __name__ == "__main__":
 	
 	
     ############################
-	# UN-COMMENT THE BLOCK OF CODE BELOW TO RUN LARGE TEST
+	# UN-COMMENT THE "items = ..." LINE OF CODE BELOW TO RUN LARGE TEST
 	############################
 	### larger test using items in iiqr
 	### locations for input files on laptop:
@@ -409,6 +256,8 @@ if __name__ == "__main__":
 	import functions.addItemPhantoms
 	import functions.itemStatsFxns
 	import functions.checkTotOH
+	
+	import functions.getshipments
 
 	transactions, itemStatsFromIiqr = functions.readiiqr.readiiqr(iiqrLocation)	
 
@@ -425,8 +274,8 @@ if __name__ == "__main__":
 	# limit to last item
 	# items = items[-1:]
 	
-	print "\n\n### getshipments(items):"
-	buyShipmentsByItem = getshipments(items)
+	print "\n\n### functions.getshipments.getshipments(items):"
+	buyShipmentsByItem = functions.getshipments.getshipments(items)
 	
 	# show shipments by item
 	shipments = []
@@ -450,7 +299,6 @@ if __name__ == "__main__":
 				buyShipmentsBySupplier[supplierName] +\
 				[shipment.getCycleTime()]
 			
-
 	for supplier in buyShipmentsBySupplier.keys():
 		print "supplier:", supplier, " lead times: ",
 		print buyShipmentsBySupplier[supplier]
@@ -481,33 +329,23 @@ if __name__ == "__main__":
 		for x in X:
 			tot += (x - mean)**2
 		return (tot/len(X))**0.5
-
-	# def flip(numFlips):
-		# heads = 0.0
-		# for i in range(numFlips):
-			# if random.random() < 0.5:
-				# heads += 1.0
-		# return heads/numFlips
-
-	# def flipSim(numFlipsPerTrial, numTrials):
-		# fracHeads = []
-		# for i in range(numTrials):
-			# fracHeads.append(flip(numFlipsPerTrial))
-		# return fracHeads
 		
-	def labelPlot(supplier, samples, mean, sd):
-		pylab.title(str(supplier) + ' (' + samples + ' Shipments) ')
+	def labelPlot(Title, samples, mean, sd):
+		pylab.title(str(Title), loc = 'left')
 		pylab.xlabel('Cycle Time (days)')
 		pylab.ylabel('Number of Shipments')
 		xmin, xmax = pylab.xlim()
 		ymin, ymax = pylab.ylim()
+		# pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
 		pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
-				   'Mean = ' + str(round(mean, 6))           # & place text
-				   + '\nSD = ' + str(round(sd, 6)))          # on plot
+				   'Mean = ' + str(round(mean, 1))           # & place text
+				   + '\nSD = ' + str(round(sd, 1))
+				   + '\nN = ' + str(samples))          # on plot
 				   
 	def makePlot(supplier, leadtimes):
 		"""
-		plots histogram of supplier delivery cycle times
+		plots histogram of supplier delivery cycle times including mean
+		and standard deviation.
 		
 		requires executing pylab.show() after calling this function
 		
@@ -516,7 +354,8 @@ if __name__ == "__main__":
 		leadtimes	- list, list of ints, cycle times for supplier
 		
 		"""	
-		pylab.hist(leadtimes, bins = 8, rwidth = .95)        # Histogram!
+		
+		pylab.hist(leadtimes, bins = 4, rwidth = .95)        # Histogram!
 		xmin,xmax = pylab.xlim()                #  axis values for current fig
 		ymin,ymax = pylab.ylim()
 		
@@ -525,7 +364,44 @@ if __name__ == "__main__":
 		mean = sum(leadtimes)/float(len(leadtimes))
 		labelPlot(supplier, samples, mean, sd)
 		# pylab.figure()
-	
+		
+	def labelPlotStartTimes(supplier, samples, dates):
+		pylab.title(str(supplier) + ' (' + samples + ' Shipments) ')
+		pylab.xlabel('Year of Shipments')
+		# pylab.ylabel('Number of Shipments')
+		xmin, xmax = pylab.xlim()
+		ymin, ymax = pylab.ylim()
+		# pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
+		# pylab.text(xmin + (xmax-xmin)*0.8, (ymax-ymin)/2,   # locate  
+				   # 'Mean = ' + str(round(mean, 1))           # & place text
+				   # + '\nSD = ' + str(round(sd, 1)))          # on plot
+	def makePlotStartTimes(supplier, startTimes, xlabel = None, bins = None):
+		"""
+		plots histogram
+		
+		requires executing pylab.show() after calling this function
+		
+		Inputs:
+		supplier 	- str, supplier name
+		leadtimes	- list, list of ints, cycle times for supplier
+		
+		"""	
+		if bins == None:
+			uniqueBinContent = []
+			for startTime in startTimes:
+				if startTime in uniqueBinContent:
+					continue
+				uniqueBinContent.append(startTime)
+			bins = len(uniqueBinContent)
+		pylab.hist(startTimes, bins, rwidth = .9)        # Histogram!
+		pylab.xlabel(xlabel)
+		xmin,xmax = pylab.xlim()            #  axis values for current fig
+		ymin,ymax = pylab.ylim()
+		
+		# samples = str(len(startTimes))
+		# labelPlotStartTimes(supplier, samples, startTimes)
+		# pylab.figure()
+		
 	def getsort(shipment):
 		""" 
 		gives something used in sort.
@@ -551,30 +427,53 @@ if __name__ == "__main__":
 		for key in dict.keys():
 			shipments = dict[key]
 			sortedshipments = sorted(shipments, key=getsort)		
-			print "\nsortedshipments:", sortedshipments
-			cycleTimes = []
+			
+			# pylab.figure()
+			pylab.subplot(331)
+			cycleTimes = [] # duration
 			for shipment in sortedshipments:
-				print shipment
 				cycleTimes.append(shipment.getCycleTime())	
-				
+			print "key:", key, "type(key)", type(key)
 			makePlot(key, cycleTimes)
+			
+			# pylab.figure()
+			pylab.subplot(332)
+			startTimes = [] # datetime
+			for shipment in sortedshipments:
+				startTimes.append(shipment.getStartDateYear())
+				# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
+				# assert False
+			xlabel = 'Year of Supply'
+			makePlotStartTimes(key, startTimes, xlabel = xlabel, bins = 3)				
+
+			# pylab.figure()
+			pylab.subplot(333)
+			startTimes = [] # datetime
+			for shipment in sortedshipments:
+				startTimes.append(shipment.getStartDateMonth())
+				# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
+				# assert False
+			xlabel = 'Month of Supply'
+			makePlotStartTimes(key, startTimes, xlabel = xlabel, bins = 12)					
+			
 			pylab.show()
-			if toTest:
-				return
+			# if toTest:
+				# return
 			
 			
 	buys = Buys(buyShipmentsByItem)
-	showPlots(buys.getbySupplier())
+	# showPlots(buys.getbySupplier())
+	
 	showPlots(buys.getbyItem())
-	sellShipmentsByItem = getshipmentscustomer(items)
-	# print sellShipmentsByItem
-	sells = Sells(sellShipmentsByItem)
-	showPlots(sells.getbyItem())
-	showPlots(sells.getbyCustomer())
+	# sellShipmentsByItem = functions.getshipments.getshipmentscustomer(items)
+	# sells = Sells(sellShipmentsByItem)
+	# showPlots(sells.getbyItem())
+	# showPlots(sells.getbyCustomer())
+	
+	
 	
 			
 	### safety stock per http://media.apics.org/omnow/Crack%20the%20Code.pdf
-	
 	
 	# populate item with indented bom
 	# For every invoice transaction for every item in demand,
