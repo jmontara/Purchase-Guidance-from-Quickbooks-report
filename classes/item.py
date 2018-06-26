@@ -39,6 +39,17 @@ class Item(object):
 		self.phantomOHqty = 0.0
 		self.phantomROpoint = 0.0
 		self.upperAssyNames = []
+		self.demandShipments = []
+	
+	def getDemandShipments(self):
+		return self.demandShipments
+	
+	def addDemandShipment(self, shipment):
+		""" 
+		Add shipment indicating sale of this item
+		or sale of an upper level assembly item
+		"""
+		self.demandShipments.append(shipment) 
 		
 	def getTotSO(self):
 		return self.totSO

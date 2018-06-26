@@ -93,15 +93,17 @@ def getshipments(items):
 def getshipmentscustomer(items):
 	"""
 	returns dictionary of shipments of items to customers
+	The dictionary is populated only with shipments that are
+	directly shipped to customers.  
 	
 	Inputs:
 	items - list of item objects
 	
 	Outputs:
-	ret 
+	ret 		itemshipments
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""	
-	ret = {}
+	itemshipments = {}
 	sellStartTransactionTypes = ['Sales Order']
 	sellEndTransactionTypes = ['Invoice']
 
@@ -159,7 +161,84 @@ def getshipmentscustomer(items):
 		# only make entries if there are sells
 		itemName = item.getItemName()
 		if len(sells)>0:
-			ret[itemName] = sells
+			itemshipments[itemName] = sells
 		
-	return ret
-			
+	return itemshipments
+	
+def addDemandShipments(itemShipments, items, toTest = True):
+	"""
+ 	Looks at shipments for each item in itemshipments.   
+	Adds a representative demand shipment to the item and to 
+	each item in the item's indented bill of materials. 
+	
+	returns 
+		
+	Inputs:
+	itemshipments 	- dict,
+					example, itemshipments[itemName] = list of sell shipments
+	items 			- list of item objects
+	
+	Outputs:
+	itemDemandShipments
+				example: {item: [shipment1, shipment2, shipment3]}
+	"""
+	
+	itemDemandShipments  = {}	
+	
+	#Item name to object lookup dictionary
+	itemName2Object = {}
+	for item in items:
+		itemName2Object[item.getItemName()] = item
+	
+	for itemSoldName  in itemShipments.keys():
+		# print "\n\n\nitemSoldName:", itemSoldName
+		itemSold = itemName2Object[itemSoldName]
+		
+		itemsInItemSoldIbom = itemSold.getIbom().getItems()
+
+		for itemSoldShipment in itemShipments[itemSoldName]:
+		
+			itemSoldQty = itemSoldShipment.getQty()
+			# print "itemSoldQty:", itemSoldQty
+			# assert False
+		
+			for itemInItemSoldIbom in itemsInItemSoldIbom:
+				
+				# print "itemInItemSoldIbom:", itemInItemSoldIbom
+				# assert False
+				
+				demandQty = str(float(itemSoldQty) * float(itemInItemSoldIbom[0]))[:4]
+				demandItemName = itemInItemSoldIbom[2]
+				demandItemDesc = itemInItemSoldIbom[3]
+
+				# generate a new shipment taking dates from the itemSoldShipment
+				# and quantities from above
+				
+				demandShipment = itemSoldShipment.getModifiedClone(demandQty, demandItemName, 
+												demandItemDesc)
+
+				
+					
+				itemName2Object[demandItemName].addDemandShipment(demandShipment)
+				# phantomSales.append(phantomSale)
+				# print "demandShipment:", demandShipment
+				# print "\n"
+				
+		# if toTest:
+			# print "toTest:", toTest
+			# break
+	
+	for key in itemName2Object.keys():
+		item = itemName2Object[key]
+		# populate with all shipments, including those of parts not purchased
+		itemDemandShipments[item.getItemName()] = item.getDemandShipments()
+		
+		# Alternative implementation:
+		# limit population to look only at purchased items:
+		# if item.isPurchased():
+			# itemDemandShipments[item.getName()] = item.getDemandShipments()
+		
+		
+	return itemDemandShipments
+
+	

@@ -117,7 +117,7 @@ def getsort(shipment):
 	ret = shipment.getCycleTime()
 	return ret
 
-def showPlots(dict, toTest = True):
+def showPlots(dict, dict2 = None, toTest = True):
 	""" 
 	print data and plot histograms for each supplier 
 	requires closing the plot to advance to the next supplier
@@ -137,7 +137,7 @@ def showPlots(dict, toTest = True):
 			cycleTimes.append(shipment.getCycleTime())	
 		print "key:", key, "type(key)", type(key)
 		makePlot(key, cycleTimes)
-		
+
 		# pylab.figure()
 		pylab.subplot(332)
 		startTimes = [] # datetime
@@ -163,5 +163,5 @@ def showPlots(dict, toTest = True):
 		makePlotStartTimes(key, startTimes, xlabel = xlabel, xmin = xmin, xmax = xmax, bins = 12)					
 		
 		pylab.show()
-		# if toTest:
-			# return
+		if toTest:
+			return

@@ -47,6 +47,8 @@ class Shipment(object):
 		return self.startDateYear
 	def getStartDateMonth(self):
 		return self.startDateMonth
+	def getQty(self):
+		return self.end.getQty()
 	def __str__(self):
 		ret = '<Shipment, ' + self.getClass() + ':'
 		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
@@ -55,7 +57,46 @@ class Shipment(object):
 		ret += self.end.getShortStr()
 		ret = ret[:-1] + '>'
 		return ret
-
+	def getModifiedClone(self, demandQty, 
+						 demandItemName, demandItemDesc):
+		""" 
+		returns shipment object identical to self
+		with exception of kwargs
+		"""
+		startItemName = demandItemName
+		startItemDesc = demandItemDesc
+		startTnum = "None"
+		startType = "demand start"
+		startDate = self.start.date
+		startNum = "None"
+		startQty = demandQty
+		startName = self.start.getName()
+		startMemo = self.start.getMemo()
+		startSOdate = "None"
+		start = classes.transaction.Transaction(
+					startItemName, startItemDesc, startTnum,
+					startType,
+					startDate, startNum, startQty, startName,
+					startMemo, startSOdate)
+		endItemName = demandItemName
+		endItemDesc = demandItemDesc
+		endTnum = "None"
+		endType = "demand end"
+		endDate = self.end.date
+		endNum = "None"
+		endQty = demandQty
+		endName = self.end.getName()
+		endMemo = self.end.getMemo()
+		endSOdate = "None"
+		end = classes.transaction.Transaction(
+					endItemName, endItemDesc, endTnum,
+					endType,
+					endDate, endNum, endQty, endName,
+					endMemo, endSOdate)
+		return Sell(start,end)
+		
+		
+		
 class Buy(Shipment):
 	def __init__(self,startTransaction,endTransaction):
 		Shipment.__init__(self,startTransaction,endTransaction)
@@ -104,9 +145,10 @@ class Sell(Shipment):
 		self.destination = startTransaction.getName()
 		self.origin = "Manufacturing Warehouse"
 	def getClass(self):
-		return "Buy"
+		return "Sell"
 	def getDestination(self):
 		return self.destination
+
 		
 class Sells(object):
 	def __init__(self, sellShipmentsByItem):
@@ -266,6 +308,37 @@ if __name__ == "__main__":
 								itemStatsFromIiqr = itemStatsFromIiqr)
 	
 
+	functions.readissbi.readissbi(filename = issbiLocation, 
+								  items = items)
+								  
+	functions.buildItemBoms.buildItemBoms(trans = transactions, 
+										  items = items)
+										  
+	# count = 0
+	# for item in items:
+		# if not item.getBom() == None:
+			# print item.getBom()
+			# count += 1
+	# print "buildItemBoms yields", count, "bills of materials"		
+	# assert False
+
+	functions.buildItemIndentedBoms.buildItemIndentedBoms(items = items)
+	# for item in items:
+		# print item.getIbom()
+	# assert False
+
+	phantomSales = functions.\
+				   addItemPhantoms.\
+				   addItemPhantoms(items = items)
+	# print "phantomSales() yields", len(phantomSales), "transactions"
+	# limit = 1000
+	# for transaction in phantomSales:
+		# print "phantomSales", transaction
+		# limit -=1
+		# if limit < 0:
+			# break
+	# assert False
+	
 	############################
 	# COMMENT OUT THE ABOVE BLOCK OF CODE TO RUN TEST OF SINGLE
 	# ITEM WHOSE TRANSACTIONS ARE DEFINED ABOVE
@@ -306,9 +379,16 @@ if __name__ == "__main__":
 	buys = Buys(buyShipmentsByItem)
 	# showPlots(buys.getbySupplier())
 	
+
+	sellShipmentsByItem = functions.getshipments.getshipmentscustomer(items)
+	sellShipmentByItem = functions.getshipments.addDemandShipments(sellShipmentsByItem,
+											  items)
+	sells = Sells(sellShipmentsByItem)
+	
 	import functions.showplots
-	functions.showplots.showPlots(buys.getbyItem())
-	# sellShipmentsByItem = functions.getshipments.getshipmentscustomer(items)
+	functions.showplots.showPlots(buys.getbyItem(),
+								  sells.getbyItem())
+
 	# sells = Sells(sellShipmentsByItem)
 	# showPlots(sells.getbyItem())
 	# showPlots(sells.getbyCustomer())
