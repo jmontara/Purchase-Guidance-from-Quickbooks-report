@@ -265,5 +265,5 @@ def showPlots(items, supply, demand = None, toTest = True):
 
 		
 		pylab.show()
-		if toTest:
-			return
+		# if toTest:
+			# return

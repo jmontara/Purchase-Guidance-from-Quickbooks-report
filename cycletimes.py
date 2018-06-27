@@ -188,7 +188,112 @@ class Sells(object):
 	def getbyCustomer(self):
 		return self.byCustomer
 
+
+class Stats(object):
+	"""
+	The stats object is stored in the item object 
+	and used to calculate safety stock. 
 	
+	Safety stock is roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf
+	"""
+	def __init__(self):
+		self.pc = None
+		
+	def setPerformanceCycle(self, 
+							meanOrder = 2,
+							meanPOtoInvoice = 30,
+							meanTransit = 2,
+							meanBuild = 7
+							):
+		"""
+		The performance cycle includes the time needed to perform functions 
+		such as deciding what to order or produce, communicating orders 
+		to the supplier, manufacturing and processing, and delivery and 
+		storage, as well as any additional time required to return to the 
+		start of the next cycle. 	
+		
+		PC time in days, example;
+		order from supplier = 1
+		receive from supplier = 30 ; mean cycle time PO to invoice 
+		transit from supplier = 7 ; ship ground
+		receive = 1 day
+		build, test, ship = 14 days
+		PC = 53
+		"""
+		self.pc = meanOrder + meanPOtoInvoice + meanTransit + meanBuild
+		
+	def getPerformanceCycle(self):
+		return self.pc
+	
+	
+	
+	
+	# populate item with indented bom
+	# For every invoice transaction for every item in demand,
+	  # populate a transaction or transactions of type "demand " 
+	  # Appropriate quantity is a multiple of the quantity on 
+	   # the invoice transaction and the quantity on the bill of materials.
+	  # Appropriate date for transaction is the date of 
+		 # the sales order associated with the invoice.
+	
+	# populate item with unit price, reorder point
+	
+	# rank items by strategic value, estimated by something like
+	  # itemCostPerYr = avg annual demand * unit cost
+	  # itemCostNowInInventory = current inventory * unit cost
+	  # itemCostAtROPoint 	= reorder point * unit cost
+	
+	# Limit to look at 10% most strategic parts.	
+	# plot demand by item histogram 
+	# print 
+	  # As Is: 
+	   # RO Point 
+		 # * Unit Cost
+		 # =   
+	  # Calcs:
+		# PC = 53 days
+		# itemCycleStock = cs (see below)
+		# itemSafetyStockDemand = ss (see below) 	
+		# Proposed:  
+		 # RO Point = 
+		 
+	# Calculate safety stock to accommodate demand variability:
+	
+	# per http://media.apics.org/omnow/Crack%20the%20Code.pdf
+	
+	# ss = safety stock
+	# Z = Z score, 1.65 for 95% cycle 
+	# PC = performance cycle, another term for total lead time 
+	# T1 = time increment used for calculating standard deviation of demand  
+	# thetaD = standard deviation of demand.
+	
+	# ss = Z * sqrt(PC/T1) * thetaD
+	
+	# The performance cycle includes the time needed to perform functions 
+	# such as deciding what to order or produce, communicating orders 
+	# to the supplier, manufacturing and processing, and delivery and 
+	# storage, as well as any additional time required to return to the 
+	# start of the next cycle. 	
+	
+	# PC time in days, example;
+	# order from supplier = 1
+	# receive from supplier = 30 ; mean cycle time PO to invoice 
+	# transit from supplier = 7 ; ship ground
+	# receive = 1 day
+	# build, test, ship = 14 days
+	# PC = 53
+	
+	# cs = cycle stock = PC * avg daily demand
+	
+	# Z = 1 cycle service level = 84% 
+	# Z = 1.65 cycle service level = 95% 
+	# Note: cycle service level would be significantly 
+	# lower than fill rate where actual purchase quantity is 
+    # significantly higher than cycle stock.
+	
+	
+			
+		
 if __name__ == "__main__":
 
 
@@ -401,73 +506,7 @@ if __name__ == "__main__":
 	
 	
 			
-	### safety stock per http://media.apics.org/omnow/Crack%20the%20Code.pdf
-	
-	# populate item with indented bom
-	# For every invoice transaction for every item in demand,
-	#   populate a transaction or transactions of type "demand " 
-	#   Appropriate quantity is a multiple of the quantity on 
-	#    the invoice transaction and the quantity on the bill of materials.
-	#   Appropriate date for transaction is the date of 
-	#	 the sales order associated with the invoice.
-	
-	# populate item with unit price, reorder point
-	
-	# rank items by strategic value, estimated by something like
-	#   itemCostPerYr = avg annual demand * unit cost
-	#   itemCostNowInInventory = current inventory * unit cost
-	#   itemCostAtROPoint 	= reorder point * unit cost
-	# 
-	# Limit to look at 10% most strategic parts.	
-	# plot demand by item histogram 
-	# print 
-	#   As Is: 
-	#    RO Point 
-	#	 * Unit Cost
-	#	 =   
-	#   Calcs:
-	#	PC = 53 days
-	#	itemCycleStock = cs (see below)
-	#	itemSafetyStockDemand = ss (see below) 	
-	#	Proposed:  
-	#	 RO Point = 
-	#	 
-	# Calculate safety stock to accommodate demand variability:
-	# 
-	# per http://media.apics.org/omnow/Crack%20the%20Code.pdf
-	#
-	# ss = safety stock
-	# Z = Z score, 1.65 for 95% cycle 
-	# PC = performance cycle, another term for total lead time 
-	# T1 = time increment used for calculating standard deviation of demand  
-	# thetaD = standard deviation of demand.
-	#
-	# ss = Z * sqrt(PC/T1) * thetaD
-	#
-	# The performance cycle includes the time needed to perform functions 
-	# such as deciding what to order or produce, communicating orders 
-	# to the supplier, manufacturing and processing, and delivery and 
-	# storage, as well as any additional time required to return to the 
-	# start of the next cycle. 	
-	# 
-	# PC time in days, example;
-	# order from supplier = 1
-	# receive from supplier = 30 ; mean cycle time PO to invoice 
-	# transit from supplier = 7 ; ship ground
-	# receive = 1 day
-	# build, test, ship = 14 days
-	# PC = 53
-	#
-	# cs = cycle stock = PC * avg daily demand
-	# 
-	# Z = 1 cycle service level = 84% 
-	# Z = 1.65 cycle service level = 95% 
-	# Note: cycle service level would be significantly 
-	# lower than fill rate where actual purchase quantity is 
-    # significantly higher than cycle stock.
-	# 
-	# 
-	
+
 	
 	
 	
