@@ -4,9 +4,9 @@
 # lec 15 w edits.py ... excerpts from; edited
 ###
 
-import random, pylab    # see matplotlib.sourceforge.net		
-
-	
+import random, pylab    # see matplotlib.sourceforge.net	
+import numpy  			# see https://docs.scipy.org/doc/numpy/reference/generated/numpy.arange.html
+import calendar	
 
 ###
 #
@@ -62,12 +62,18 @@ def makePlot(title, xLabel, yLabel, bins, rwidth, leadtimes,
 	pylab.xlabel(xLabel, fontsize = fs)
 	pylab.ylabel(yLabel, fontsize = fs)
 	pylab.xticks(fontsize = fs)
-	locs, labels = pylab.xticks()
-	print "\n\nlocs, labels:", locs, labels
-	for xtickslabel in labels:
-		print xtickslabel
-	
+	if xLabel == 'Month':
+		pylab.xticks( numpy.arange(12), calendar.month_name[1:13],
+		rotation=90 )
+	if xLabel == 'Month No Label':
+		pylab.xticks( numpy.arange(12), ("","","","","","","","","","","",""),
+		rotation=90 )
 	pylab.yticks(fontsize = fs)
+
+	# locs, labels = pylab.xticks()
+	# print "\n\nlocs, labels:", locs, labels
+	# for xtickslabel in labels:
+		# print xtickslabel	
 	
 	if showStats:
 		N = str(len(leadtimes))
@@ -77,58 +83,19 @@ def makePlot(title, xLabel, yLabel, bins, rwidth, leadtimes,
 	if not xmin == None:
 		pylab.xlim(xmin, xmax)
 	
-def labelPlotStartTimes(supplier, samples, dates):
-	pylab.title(str(supplier) + ' (' + samples + ' Shipments) ')
-	pylab.xlabel('Year of Shipments')
-	# pylab.ylabel('Number of Shipments')
-	xmin, xmax = pylab.xlim()
-	ymin, ymax = pylab.ylim()
-	# pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/2,   # locate  
-	# pylab.text(xmin + (xmax-xmin)*0.8, (ymax-ymin)/2,   # locate  
-			   # 'Mean = ' + str(round(mean, 1))           # & place text
-			   # + '\nSD = ' + str(round(sd, 1)))          # on plot
-def makePlotStartTimes(supplier, startTimes, xlabel = None, xmin = None, xmax = None, bins = None):
-	"""
-	plots histogram
-	
-	requires executing pylab.show() after calling this function
-	
-	Inputs:
-	supplier 	- str, supplier name
-	leadtimes	- list, list of ints, cycle times for supplier
-	
-	"""	
-	if bins == None:
-		uniqueBinContent = []
-		for startTime in startTimes:
-			if startTime in uniqueBinContent:
-				continue
-			uniqueBinContent.append(startTime)
-		bins = len(uniqueBinContent)
-	pylab.hist(startTimes, bins, rwidth = .9)        # Histogram!
-	pylab.xlabel(xlabel)
-	if xmax == None:
-		return
-	pylab.xlim(xmin, xmax)
-	xmin,xmax = pylab.xlim()            #  axis values for current fig
-	ymin,ymax = pylab.ylim()
-	
-	# samples = str(len(startTimes))
-	# labelPlotStartTimes(supplier, samples, startTimes)
-	# pylab.figure()
-	
 def getsort(shipment):
 	""" 
 	gives something used in sort.
 	Question:  inaccessible class Shipment function getCycleTime
 	"""
-	cyclestring = shipment.getCycleTime()
-	ret = str(shipment.getCycleTime())
-	for i in range(10 - len(ret)):
-		ret = " " + ret
-	# ret += shipment.getItemName()
-	ret = shipment.getCycleTime()
-	return ret
+	pass
+	# cyclestring = shipment.getCycleTime()
+	# ret = str(shipment.getCycleTime())
+	# for i in range(10 - len(ret)):
+		# ret = " " + ret
+	# # ret += shipment.getItemName()
+	# ret = shipment.getCycleTime()
+	# return ret
 
 def showPlots(items, supply, demand = None, toTest = True):
 	""" 
@@ -197,7 +164,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 			# assert False
 		title = ""
-		xLabel = ""
+		xLabel = "Month No Label"
 		yLabel = ""
 		cycleTimes = startTimes
 		bins =monthBins
@@ -239,7 +206,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 			# assert False
 		title = ""
-		xLabel = ""
+		xLabel = "Month No Label"
 		yLabel = ""
 		cycleTimes = startTimes
 		bins=monthBins
@@ -274,7 +241,8 @@ def showPlots(items, supply, demand = None, toTest = True):
 				startTimes.append(shipment.getStartDateYear())
 			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 			# assert False
-		xlabel = 'Year'
+		xLabel = 'Year'
+		yLabel = ''
 		cycleTimes = startTimes
 		bins=yearBins
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
@@ -287,7 +255,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 				startTimes.append(shipment.getStartDateMonth())
 			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
 			# assert False
-		xlabel = 'Month'
+		xLabel = 'Month'
 		cycleTimes = startTimes
 		bins=monthBins
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
