@@ -49,6 +49,9 @@ class Shipment(object):
 		return self.startDateMonth
 	def getQty(self):
 		return self.end.getQty()
+	def getQtyInt(self):
+		str = self.end.getQty()
+		return abs(int(str[:str.find(".")]))
 	def __str__(self):
 		ret = '<Shipment, ' + self.getClass() + ':'
 		ret += '  "' + self.origin + '" --> "' + self.destination + '"\n'
@@ -383,11 +386,13 @@ if __name__ == "__main__":
 	sellShipmentsByItem = functions.getshipments.getshipmentscustomer(items)
 	sellShipmentByItem = functions.getshipments.addDemandShipments(sellShipmentsByItem,
 											  items)
-	sells = Sells(sellShipmentsByItem)
+	sells = Sells(sellShipmentByItem)
 	
 	import functions.showplots
-	functions.showplots.showPlots(buys.getbyItem(),
-								  sells.getbyItem())
+	functions.showplots.showPlots(items,
+								  buys.getbyItem(),
+								  sells.getbyItem(),
+								  )
 
 	# sells = Sells(sellShipmentsByItem)
 	# showPlots(sells.getbyItem())
