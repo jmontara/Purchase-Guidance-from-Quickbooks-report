@@ -76,9 +76,15 @@ def makePlot(title, xLabel, yLabel, bins, rwidth, leadtimes,
 		# print xtickslabel	
 	
 	if showStats:
-		N = str(len(leadtimes))
-		sd = stdDev(leadtimes)
-		mean = sum(leadtimes)/float(len(leadtimes))
+		if len(leadtimes) == 0:
+			N = 0.0
+			sd = 0.0
+			mean = 0.0
+		else:
+			N = str(len(leadtimes))
+			sd = stdDev(leadtimes)
+			mean = sum(leadtimes)/float(len(leadtimes))
+
 		labelPlot( mean, sd, N)
 	if not xmin == None:
 		pylab.xlim(xmin, xmax)
@@ -102,6 +108,9 @@ def showPlots(items, supply, demand = None, toTest = True):
 	print data and plot histograms for each supplier 
 	requires closing the plot to advance to the next supplier
 	
+	requires that start of period for which data is plotted be 
+	periodStart = datetime.day(2015,1,1).toordinal()
+	
 	inputs:
 	items 	- list, list of item objects
 	supply 	- dictionary, ie, Buys.getbyItem(), Buys.getbySupplier()
@@ -120,8 +129,15 @@ def showPlots(items, supply, demand = None, toTest = True):
 	itemName2Object = {}
 	for item in items:
 		itemName2Object[item.getItemName()] = item
-	
+		import cycletimes
+		itemStats = cycletimes.Stats()
+		item.setStat(itemStats)
+		
 	for key in supply.keys():
+		# to look at only one item, uncomment the following two lines
+		# if not key == "Heater-3x5-220":
+			# continue
+	
 		# pylab.figure()
 		pylab.subplot(431)
 		cycleTimes = [] # duration
@@ -140,7 +156,22 @@ def showPlots(items, supply, demand = None, toTest = True):
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
 				showStats)
 		
+		meanPOtoInvoice = 0
 
+		for cycleTime in cycleTimes:
+			meanPOtoInvoice += cycleTime
+		meanPOtoInvoice=meanPOtoInvoice/len(cycleTimes)
+		itemName2Object[key].getStat().setPerformanceCycle(
+							 meanPOtoInvoice=meanPOtoInvoice)
+		print "cycleTimes:", cycleTimes		
+		print "meanPOtoInvoice:", meanPOtoInvoice
+		print "itemName2Object[key].getStat().getPerformanceCycle():",
+		print itemName2Object[key].getStat().getPerformanceCycle()
+		
+		### The following lines are test of Stats object for consistency with graph
+		itemStats.setSup(cycleTimes)
+		print "itemStats:", itemStats
+		
 		# pylab.figure()
 		pylab.subplot(432)
 		startTimes = [] # datetime
@@ -171,53 +202,59 @@ def showPlots(items, supply, demand = None, toTest = True):
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
 				 showStats = False, xmin = monthXmin, xmax = monthXmax)
 	
-		# pylab.figure()
-		pylab.subplot(434)
-		cycleTimes = [] # duration
-		for shipment in demand[key]:
-			cycleTimes.append(shipment.getCycleTime())	
+		# # pylab.figure()
+		# pylab.subplot(434)
+		# cycleTimes = [] # duration
+		# for shipment in demand[key]:
+			# cycleTimes.append(shipment.getCycleTime())	
 
-		title = ""
-		xLabel = "SO to Invoice (days)"
-		yLabel = "Demand No. Ships"
-		bins = 4
-		rwidth =.95
-		showStats = True 
-		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
+		# title = ""
+		# xLabel = "SO to Invoice (days)"
+		# yLabel = "Demand No. Ships"
+		# bins = 4
+		# rwidth =.95
+		# showStats = True 
+
+		# print "demand[key]:", demand[key]
+		# for shipment in demand[key]:
+			# print shipment
+		# print "key:", key
+		# print "cycletimes:", cycleTimes
+		# makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
 		
-		pylab.subplot(435)
-		startTimes = [] # datetime
-		for shipment in demand[key]:
-			startTimes.append(shipment.getStartDateYear())
-			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
-			# assert False
-		title = ""
-		xLabel = ""
-		yLabel = ""
-		cycleTimes = startTimes
-		bins=yearBins
-		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
-				 showStats = False, xmin = yearXmin, xmax = yearXmax)
+		# pylab.subplot(435)
+		# startTimes = [] # datetime
+		# for shipment in demand[key]:
+			# startTimes.append(shipment.getStartDateYear())
+			# # print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
+			# # assert False
+		# title = ""
+		# xLabel = ""
+		# yLabel = ""
+		# cycleTimes = startTimes
+		# bins=yearBins
+		# makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
+				 # showStats = False, xmin = yearXmin, xmax = yearXmax)
 				 
-		pylab.subplot(436)
-		startTimes = [] # datetime
-		for shipment in demand[key]:
-			startTimes.append(shipment.getStartDateMonth())
-			# print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
-			# assert False
-		title = ""
-		xLabel = "Month No Label"
-		yLabel = ""
-		cycleTimes = startTimes
-		bins=monthBins
-		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
-				 showStats = False, xmin = monthXmin, xmax = monthXmax)
+		# pylab.subplot(436)
+		# startTimes = [] # datetime
+		# for shipment in demand[key]:
+			# startTimes.append(shipment.getStartDateMonth())
+			# # print "startTimes:", startTimes, "type(startTimes):", type(startTimes)
+			# # assert False
+		# title = ""
+		# xLabel = "Month No Label"
+		# yLabel = ""
+		# cycleTimes = startTimes
+		# bins=monthBins
+		# makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
+				 # showStats = False, xmin = monthXmin, xmax = monthXmax)
 			
 	
 		# Show qty shipped in histogram
 		# 
 	
-		pylab.subplot(437)
+		pylab.subplot(434)
 		cycleTimes = [] # duration
 		for shipment in demand[key]:
 			# print "\nshipment.getQty", shipment.getQtyInt(),
@@ -233,8 +270,12 @@ def showPlots(items, supply, demand = None, toTest = True):
 		rwidth =.95
 		showStats = True 
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
+		### The following lines are test of Stats object for consistency with graph
+		itemStats.setDem(cycleTimes)
+		print "itemStats:", itemStats
+
 		
-		pylab.subplot(438)
+		pylab.subplot(435)
 		startTimes = [] # datetime
 		for shipment in demand[key]:
 			for qtyDemanded in range(shipment.getQtyInt()):
@@ -248,7 +289,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
 				 showStats = False, xmin = yearXmin, xmax = yearXmax)
 				 
-		pylab.subplot(439)
+		pylab.subplot(436)
 		startTimes = [] # datetime
 		for shipment in demand[key]:
 			for qtyDemanded in range(shipment.getQtyInt()):
@@ -261,9 +302,110 @@ def showPlots(items, supply, demand = None, toTest = True):
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, 
 				 showStats = False, xmin = monthXmin, xmax = monthXmax)
 
-
-
+				 
+		# new row & out of sequence column	
+		item = itemName2Object[key]
+		pc = item.getStat().getPerformanceCycle()		
+		import datetime
+		pylab.subplot(4,3,12)
+		startTimes = [] # duration
+		for shipment in demand[key]:
+			# print "\nshipment.getQty", shipment.getQtyInt(),
+			# print type(shipment.getQtyInt())
+		# assert False	
+			for qtyDemanded in range(shipment.getQtyInt()):
+				startTimes.append(shipment.getStartDate().toordinal())
+				
+		# print "startTimes:", startTimes
+		# print "len(startTimes):", len(startTimes)
 		
+		
+		# count shipments in each performance cycle and put that into
+		countOfQtyInPCList = []
+		sortedStartTimes = sorted(startTimes)
+		# The first day of the period for which data is being parsed
+		periodStart = datetime.date(2015,1,1).toordinal()  #
+		# The last day of the period for which data is being parsed
+		periodEnd = datetime.date.today().toordinal()
+		# number of full and partial PC cycles in periodStart - periodEnd
+		pcCycles = (periodEnd - periodStart)/pc + 1
+		# print "pcCycles:", pcCycles, "pc:", pc
+		# first day of first pcCycle
+		pcCycleStart = periodStart
+		for pcCycle in range(pcCycles):
+			# print "pcCycle:", pcCycle
+			pcCycleEnd = pcCycleStart + pc
+			countOfQtyInPC = 0
+			
+			for startTime in sortedStartTimes:
+				# print "pcCycleStart:", pcCycleStart, "startTime:", startTime, 
+				# print "pcCycleEnd:", pcCycleEnd,
+				# print "countOfQtyInPC:", countOfQtyInPC
+				if pcCycleStart <= startTime <= pcCycleEnd:
+					countOfQtyInPC += 1
+			countOfQtyInPCList.append(countOfQtyInPC)
+			pcCycleStart += pc
+
+		# print "countOfQtyInPCList:", countOfQtyInPCList
+		
+		
+		title = "Demand Qty Vs. Count"
+		xLabel = "Qty in Performance Cycle"
+		yLabel = "Count of Qty in Performance Cycle"
+		bins = 8
+		rwidth =.95
+		showStats = True 
+		cycleTimes = countOfQtyInPCList
+		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
+			
+		pylab.subplot(4,3,10)
+		item = itemName2Object[key]
+		pc = item.getStat().getPerformanceCycle()
+		pcDmdAvg = ''
+		pcDmdStd = ''
+		supLtStd = ''
+		yrDmdAvg = ''
+		pcDmdAvg = ''
+		ssDemand = ''
+		ssSupply = ''
+		roPt1 = '0'
+		roPt2 = '0'
+		roPt3 = '0'
+		unitCost = '0'
+		
+		
+		str = "(roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf )\n"
+		str += "Safety Stock (SS) CALCULATIONS:\n"
+		str += "Performance Cycle (PC): " + pc.__str__() + " (days)\n"
+		str += "Demand in PC Avg (pcDmdAvg): " + pcDmdAvg.__str__() + " units/PC\n"
+		str += "Demand in PC Std Dev (pcDmdStd): " + pcDmdStd.__str__() + " units\n"
+		str += "Supply lead Time Std Dev (supLtStd): " + supLtStd.__str__() + "days"
+		str += "Demand in Day Avg (dayDmdAvg): " + yrDmdAvg.__str__() + " units/day\n"
+		str += "\n"
+		str += "Cycle Stock = pcDmdAvg = " + pcDmdAvg.__str__() + " units\n"
+		str += "Demand SS = 1.65 * pcDmdStd: = " + ssDemand.__str__() +" units\n"
+		str += "Supply SS = 1.65 * supLtStd * dayDmdAvg = " + ssSupply.__str__() + " units\n"
+		str += "R.O. Point = Cycle Stock + Demand SS + Supply SS\n " 
+		str += "      = " + roPt1.__str__() + "units\n"
+		str += "R.O. Point = Cycle Stock + ((Demand SS)^2 + (Supply SS)^2)^(1/2) \n"
+		str += "      = " + roPt2.__str__() + "units\n"
+		str += "\n"
+		str += "R.O. Point from Quickbooks = " + roPt3.__str__() + " units\n"
+		str += "Unit Cost = " + unitCost.__str__() + " $\n"
+		str += "Savings Possible = (R.O. Point from QB - R.O. Point) * Unit Cost \n"
+		savings = (float(roPt3) - float(roPt2)) * float(unitCost)
+		str += "      = " + savings.__str__() + "$ savings possible\n"
+		
+		pylab.hist([])
+		pylab.xticks( numpy.arange(12), ("","","","","","","","","","","",""),
+		rotation=90 )		
+		pylab.yticks( numpy.arange(12), ("","","","","","","","","","","",""),
+		rotation=90 )				
+		xmin, xmax = pylab.xlim()
+		ymin, ymax = pylab.ylim()	
+		pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/10, str, fontsize = "5")
+				
+	
 		pylab.show()
 		# if toTest:
 			# return

@@ -33,7 +33,7 @@ class Item(object):
 		
 		# Item Statistics (itemStats) ...
 		self.itemStats = ''
-
+		self.itemStat = None # stores an item's Stat object
 		# from addItemPhantoms
 		self.phantomSOqty = 0.0
 		self.phantomOHqty = 0.0
@@ -161,7 +161,17 @@ class Item(object):
 		
 	def getItemStats(self):
 		return self.itemStats
-		
+	
+	def setStat(self, itemStat):
+		# print "type(itemStat):", type(itemStat)
+		# assert type(itemStat) == '__main__.Stats'
+		self.itemStat = itemStat
+	
+	def getStat(self):
+		"""returns itemStat object associated with item
+		"""
+		return self.itemStat
+	
 	def getItemName(self):
 		return self.itemName
 		
