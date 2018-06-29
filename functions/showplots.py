@@ -7,7 +7,7 @@
 import random, pylab    # see matplotlib.sourceforge.net	
 import numpy  			# see https://docs.scipy.org/doc/numpy/reference/generated/numpy.arange.html
 import calendar	
-
+import classes.stats
 ###
 #
 # simple plot
@@ -130,7 +130,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 	for item in items:
 		itemName2Object[item.getItemName()] = item
 		import cycletimes
-		itemStats = cycletimes.Stats()
+		itemStats = cycletimes.classes.stats.Stats()
 		item.setStat(itemStats)
 		
 	for key in supply.keys():
@@ -169,7 +169,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 		print itemName2Object[key].getStat().getPerformanceCycle()
 		
 		### The following lines are test of Stats object for consistency with graph
-		itemStats.setSup(cycleTimes)
+		itemStats.setStats(cycleTimes, type = "supply")
 		print "itemStats:", itemStats
 		
 		# pylab.figure()
@@ -271,7 +271,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 		showStats = True 
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
 		### The following lines are test of Stats object for consistency with graph
-		itemStats.setDem(cycleTimes)
+		itemStats.setStats(cycleTimes, type = "demand")
 		print "itemStats:", itemStats
 
 		

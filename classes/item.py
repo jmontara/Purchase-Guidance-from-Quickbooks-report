@@ -118,6 +118,9 @@ class Item(object):
 		"""
 		return self.upperAssyNames
 	
+	def whereused(self):
+		pass
+		
 	def setItemStatsFromIiqr(self, value, qty):
 		"""
 		self 	- object, Item object
