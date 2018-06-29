@@ -17,9 +17,9 @@ class Stats(object):
 		self.demMean = None  # demand stats
 		self.demStd = None
 		self.demN = None
+		self.pc1 = None  # The performance cycle for this item alone
+		self.pc2 = None  # The performance cycle for this item and upper asys.
 		
-		self.pc = None  # The performance cycle for this item alone
-	
 	def getMeanStdN(self, X):
 		try: # if there is any supply or demand
 			N = len(X)
@@ -51,6 +51,7 @@ class Stats(object):
 			self.supMean = mean
 			self.supStd = std	
 			self.supN = N
+			self.setPerformanceCycle(meanPOtoInvoice = mean)
 		if type == "demand":
 			self.demMean = mean
 			self.demStd = std	
@@ -120,27 +121,39 @@ class Stats(object):
 		the performance cycle for the item delivered by the pcb
 		assembly house.  
 		"""
-		self.pc = meanOrder + meanPOtoInvoice + meanTransit + meanBuild
+		self.pc1 = meanOrder + meanPOtoInvoice + meanTransit + meanBuild
 		
 	def getPerformanceCycle(self):
-		return self.pc
-	def setPerformanceCycleAssy(self, item):
+		return self.pc1
+		
+	def setPerformanceCycleAssy(self, pc2):
 		"""
-		considers performance cycle of upper level assemblies
+		Considers performance cycle of upper level assemblies.
 		"""
-		raise notimplemented
+		self.pc2 = pc2
+		
+	def getPerformanceCycleAssy(self):
+		return self.pc2
+		
+		
 	def __str__(self):
-		str = "Stats object:\n"
+		str = "\nStats are roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf \n"
+		str += "Stats object:\n"
+		
 		str += "Item Supply (PO to invoice time, days) stats: \n"
 		str += " Mean = " + self.getSupMean().__str__() +"\n"
 		str += " Std Dev = " + self.getSupStd().__str__() + "\n"
 		str += " N = " + self.getSupN().__str__() + "\n"
-
+		str += "Item Supply Performance Cycle (PO to receive, assemble, ship, days)\n"
+		str += " For this item alone: " + self.getPerformanceCycle().__str__() + "\n"
+		str += " For this & upper asys: " + self.getPerformanceCycleAssy().__str__() + "\n"
+		
 		str += "Item Demand (SO to invoice time, days) stats: \n"
 		str += " Mean = " + self.getDemMean().__str__() +"\n"
 		str += " Std Dev = " + self.getDemStd().__str__() + "\n"
 		str += " N = " + self.getDemN().__str__() + "\n"		
 		return str
+	
 		
 def testClassStats():
 	import classes.item

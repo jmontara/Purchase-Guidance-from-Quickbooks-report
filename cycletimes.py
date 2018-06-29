@@ -11,8 +11,6 @@ import classes.transaction
 import datetime
 import classes.stats
 
-
-
 class Shipment(object):	
 	def __init__(self,startTransaction,endTransaction):
 		self.start = startTransaction
@@ -426,15 +424,15 @@ if __name__ == "__main__":
 	# limit to last item
 	# items = items[-1:]
 	
-	print "\n\n### functions.getshipments.getshipments(items):"
+	# print "\n\n### functions.getshipments.getshipments(items):"
 	buyShipmentsByItem = functions.getshipments.getshipments(items)
 	
 	# show shipments by item
 	shipments = []
 	for item in buyShipmentsByItem.keys():
-		print "\n\nshowing buyShipmentsByItem:"
+		# print "\n\nshowing buyShipmentsByItem:"
 		for shipment in buyShipmentsByItem[item]:
-			print shipment
+			# print shipment
 			shipments.append(shipment)
 	# assert False
 			
@@ -451,9 +449,9 @@ if __name__ == "__main__":
 				buyShipmentsBySupplier[supplierName] +\
 				[shipment.getCycleTime()]
 			
-	for supplier in buyShipmentsBySupplier.keys():
-		print "supplier:", supplier, " lead times: ",
-		print buyShipmentsBySupplier[supplier]
+	# for supplier in buyShipmentsBySupplier.keys():
+		# print "supplier:", supplier, " lead times: ",
+		# print buyShipmentsBySupplier[supplier]
 		
 	buys = Buys(buyShipmentsByItem)
 	# showPlots(buys.getbySupplier())
@@ -464,9 +462,10 @@ if __name__ == "__main__":
 											  items)
 	sells = Sells(sellShipmentByItem)
 	
-	### the following is a very helpful block of code,
-	# but need to calculate performance cycle accurately
-	# and the existance of consigned items requires 
+	### the following is a first pass block of code,
+	# functional, 
+	# but the need to calculate performance cycle accurately
+	# and the existence of consigned items directs 
 	# the use of the Stats object.
 	# import functions.showplots
 	# functions.showplots.showPlots(items,
