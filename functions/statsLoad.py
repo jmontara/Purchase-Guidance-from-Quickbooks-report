@@ -12,67 +12,108 @@ def supplycycles(items, buys):
 		itemStat = item.getStat()
 		
 		try:
+			assert item.isPurchased() == True
+			print "\n\nitem:", item
+			print "item isPurchased() == True"
 			# list of buy transactions for the item:
 			xactions = buys.getbyItem()[itemName]
+			print "xactions:", xactions
+			for xaction in xactions:
+				print xaction
 		except:
 			# no buy transactions for the item
+			print "\n\nno buy transactions for this item:"
+			print item
+			print "xactions:", xactions
+			# assert False
 			continue 
 			
 		cycletimes = []
 		for xaction in xactions:
 			cycletimes.append(xaction.getCycleTime())
 		itemStat.setStats(cycletimes, type = "supply")
+	
+		print "itemStat:", itemStat
 		
+	
 		# print "itemStat:", itemStat
 	# assert False
 
-def performancecyclesofassyitem(items, itemName2Object):
+def performancecyclesofassyitem(items, itemName2Object"):
 	"""
-	sets Performance Cycles  for each item in items 
-	with consideration of the Performance Cycles
-	of an item's upper level assembly.
+	For each item, sets Stats object according to content in
+	performanceCycle2.csv.
 	
-	If the item has no upper level asy, sets equal Performance
-	Cycle of the assembly equal to Performance Cycle of the item.
-	"""
+	Where one item must be purchased prior to purchase of another
+	item, the one item is referred to herein as a successor item.
+	
+	performanceCycle2.csv has the following columms.
 
+	itemName, successorName
+	
+	Example: If itemName has no successors,  pc  = thisPC
+	Example:  If itemName has a successor, pc = thisPC + successorPC
+	
+	"""
+	import functions.readperformancecycles2
+	itemNameSuccesorNames = functions.readperformancecycles2.readperformancecycles2()
+	
 	for item in items:
 
 		itemPC = item.getStat().getPerformanceCycle()
-		if itemPC == None:
-			# PO or record of purchase not available for this item:
+		# PO or record of purchase not available for this item:
+		if item.isPurchased() == False:
 			continue
-		else:
-			print "itemName", item.getItemName(), "has nonzero PC"
-			# assert False
-	
-		asys = item.getUpperAssyNames() 
-		upperAsyName =''
-		upperAsyPC_highest = 0
 		
-		print "asys:", asys
+		if item.getItemName() in item2successor.keys():
+			itemStatsObject = item.getStat()
+			successorStatsObject = itemName2Object[item2successor[item.getItemName()]].getStat()
+		
 		for asy in asys:
-			upperAsyPC = itemName2Object[asy].getStat().getPerformanceCycle()
-			# print "upperAsyPC:", upperAsyPC
+			asyObject = itemName2Object[asy]
+			upperAsyPC = asyObject.getStat().getPerformanceCycle()
+			# print "asyObject:", asyObject
+			
+			# PO or record of purchase not available for this asy item
 			if upperAsyPC == None:
-				# PO or record of purchase not available for this asy item
+
+				print "upperAsyPC == None for item:", 
+				print item.getItemName(), "upperAsy:", asyObject.getItemName(),
+				print asyObject.getItemDesc()
 				continue
+			# print "not upperAsyPC == None for item:", 
+			# print item.getItemName(), "upperAsy:", asyObject.getItemName()			
+			# if asyObject.isPurchased() == False:
+				# print "asyObject.isPurchased() == False",
+				# print "for item:", item.getItemName(),"asy:", asyObject.getItemName()
+				# continue
+			print "asyObject.isPurchased() == True"
+			print "for item:", item.getItemName(),"asy:", asyObject.getItemName()
+			assert False
 			if asy == item.getItemName():
 				continue
 			else:
-				print "\n\nitemName", item.getItemName(), "has nonzero PC",
+				print "itemName", item.getItemName(), "has nonzero PC",
 				print "and upper level assy", asy, " has nonzero PC"
 
 			if  upperAsyPC_highest < upperAsyPC:
 				upperAsyPC_highest = upperAsyPC
-				upperAsyName = asy
+				selectedAsyObject = asyObject
 		
-		item.getStat().setPerformanceCycleAssy(itemPC + upperAsyPC_highest)
 		if upperAsyPC_highest >0:
-			print "itemName:", item.getItemName(), "(", item.getItemDesc(), ")"
-			print "upperAsyName:", upperAsyName
-			print "item.getStat():", item.getStat()
+			
+			asyName = selectedAsyObject.getItemName() + " (" + selectedAsyObject.getItemDesc() + ")"
+			mean = selectedAsyObject.getStat().getSupMean()
+			std = selectedAsyObject.getStat().getSupStd()
+			item.getStat().setStats2(asyName, mean, std)
+			
+			# test:  uncomment the following block to show purchased asy item.
+			print "\n\n\nitemName:", item.getItemName(), "(", item.getItemDesc(), ")\n"
+			print "asyName:", asyName
+			print "item.getStat():\n", item.getStat()
 			assert False
+			
+			
 		
 def statsLoad(items, buys, sells):
 	""" populate performance cycle for each item in items"""

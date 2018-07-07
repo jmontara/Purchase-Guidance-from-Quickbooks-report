@@ -95,7 +95,9 @@ class Item(object):
 		
 	def addUpperAssy(self, itemName):
 		""" 
-		Assumes qty comes only from function addItemPhantoms.
+		appends to list of Upper Assy Names.
+		
+		See function addItemPhantoms.
 		
 		Inputs:
 		self	- object, Item object
@@ -159,19 +161,17 @@ class Item(object):
 		self.roPoint = roPoint
 		
 	def setItemStats(self, itemStats):
-		# assert type(itemStats) == ItemStats
 		self.itemStats = itemStats
 		
 	def getItemStats(self):
 		return self.itemStats
 	
 	def setStat(self, itemStat):
-		# print "type(itemStat):", type(itemStat)
-		# assert type(itemStat) == '__main__.Stats'
 		self.itemStat = itemStat
 	
 	def getStat(self):
-		"""returns itemStat object associated with item
+		"""
+		returns itemStat object associated with item
 		"""
 		return self.itemStat
 	
@@ -366,7 +366,7 @@ class Item(object):
 	def __str__(self):
 		ret = "<Item: " 
 		ret += self.itemName  
-		# ret += " (" + self.itemDesc + ")>\n"
+		ret += " (" + self.itemDesc + ")>\n"
 		# ret += self.getIbom().__str__() 
 		# ret += self.getXactionsStr()
 		ret += self.itemStats.__str__()

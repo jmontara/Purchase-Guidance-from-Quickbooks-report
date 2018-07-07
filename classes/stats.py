@@ -10,16 +10,31 @@ class Stats(object):
 		
 	Safety Stock is roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf
 	"""
-	def __init__(self):
-		self.supMean = None  # supply stats
-		self.supStd = None
+	def __init__(self, item):
+		""" 
+		inputs:
+		self 	- object, Stats object
+		item	- object, item object
+		"""
+		
+		# Supply Stats
+		
+		self.item = None
+		self.supMean = None  		# this item alone
+		self.supStd = None			
 		self.supN = None
-		self.demMean = None  # demand stats
+		self.pc = None  		
+		
+		self.successor = None   	# successor item	
+
+		self.demMean = None  		# demand stats
 		self.demStd = None
 		self.demN = None
-		self.pc1 = None  # The performance cycle for this item alone
-		self.pc2 = None  # The performance cycle for this item and upper asys.
 		
+
+	def getItem(self):
+		return self.item
+
 	def getMeanStdN(self, X):
 		try: # if there is any supply or demand
 			N = len(X)
@@ -46,6 +61,7 @@ class Stats(object):
 		std		- float, std deviation of entries
 		N 		- int, number of entries
 		"""
+		
 		mean, std, N = self.getMeanStdN(X)
 		if type == "supply":
 			self.supMean = mean
@@ -56,7 +72,7 @@ class Stats(object):
 			self.demMean = mean
 			self.demStd = std	
 			self.demN = N
-		
+	
 	def getSupMean(self):
 		""" gives mean of cycle times for supply, ie PO 
 		time to Invoice time"""
@@ -67,7 +83,7 @@ class Stats(object):
 	def getSupN(self):
 		""" gives sample size used to calculate supMean and supStd"""
 		return self.supN
-			
+		
 	def setDem(self, X):
 		"""
 		Sets mean and standard deviation of cycle times 
@@ -84,14 +100,15 @@ class Stats(object):
 		"""
 		mean, std, N = self.getMeanStdN(X)
 
-	
 	def getDemMean(self):
 		""" gives mean of cycle times for supply, ie SO 
 		time to Invoice time"""
 		return self.demMean
+		
 	def getDemStd(self):
 		""" gives std deviation of cycle times for demand"""
 		return self.demStd
+		
 	def getDemN(self):
 		""" gives sample size """
 		return self.demN
@@ -115,40 +132,57 @@ class Stats(object):
 		transit from supplier = 2 ; ship ground
 		build, test, ship = 7 days
 		PC = 41
+		"""
+		self.pc = float(meanOrder + meanPOtoInvoice + meanTransit + meanBuild)
+		
+	def getPerformanceCycle(self):
+		"""
+		Returns performance cycle of the item and the successor item.
 		
 		The performance cycle for an item that is issued on consignment
 		to the pcb assembly house, for example, must consider 
-		the performance cycle for the item delivered by the pcb
+		the performance cycle for the successor item delivered by the pcb
 		assembly house.  
 		"""
-		self.pc1 = meanOrder + meanPOtoInvoice + meanTransit + meanBuild
 		
-	def getPerformanceCycle(self):
-		return self.pc1
-		
-	def setPerformanceCycleAssy(self, pc2):
+		if not self.successor == None:
+			print "\ntype(self.successor):", type(self.successor)
+			print "type(self.successor.getStat()):", type(self.successor.getStat())
+			return self.successor.getStat().getPerformanceCycle() + self.pc
+		return self.pc
+
+	def setSuccessor(self, successor):
+		""" 
+		Inputs:
+		successor  - object, item object
 		"""
-		Considers performance cycle of upper level assemblies.
+		self.successor = successor
+		
+	def getSuccessor(self):
 		"""
-		self.pc2 = pc2
-		
-	def getPerformanceCycleAssy(self):
-		return self.pc2
-		
+		Outputs:
+		successor 	- object, item object
+		"""
+		return self.successor
 		
 	def __str__(self):
 		str = "\nStats are roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf \n"
 		str += "Stats object:\n"
 		
-		str += "Item Supply (PO to invoice time, days) stats: \n"
-		str += " Mean = " + self.getSupMean().__str__() +"\n"
-		str += " Std Dev = " + self.getSupStd().__str__() + "\n"
-		str += " N = " + self.getSupN().__str__() + "\n"
-		str += "Item Supply Performance Cycle (PO to receive, assemble, ship, days)\n"
-		str += " For this item alone: " + self.getPerformanceCycle().__str__() + "\n"
-		str += " For this & upper asys: " + self.getPerformanceCycleAssy().__str__() + "\n"
-		
-		str += "Item Demand (SO to invoice time, days) stats: \n"
+		str += "Supply (PO to invoice time, days) stats: \n"
+		str += " Item alone:"
+		str += "  Mean = " + self.getSupMean().__str__() +" "
+		str += "  Std Dev = " + self.getSupStd().__str__() + " "
+		str += "  N = " + self.getSupN().__str__() + "\n"
+		str += "Mean Performance Cycle (PO to receive, assemble, ship, days)\n"		
+		str += "  this item and successor item if any: " 
+		str +=    self.getPerformanceCycle().__str__()  + "\n"
+		successor = self.getSuccessor() 
+		if not successor == None:
+			str += "  successor is: " + successor.getItemName().__str__()
+			str += "  successor item alone: "
+			str += successor.getStat().getPerformanceCycle().__str__() + "\n"
+		str += "Demand (SO to invoice time, days) stats: \n"
 		str += " Mean = " + self.getDemMean().__str__() +"\n"
 		str += " Std Dev = " + self.getDemStd().__str__() + "\n"
 		str += " N = " + self.getDemN().__str__() + "\n"		
@@ -156,34 +190,47 @@ class Stats(object):
 	
 		
 def testClassStats():
-	import classes.item
-	item = classes.item.Item("test itemName", "testitemDesc")
-	stat = Stats()
-	item.setStat(stat)
-	stat.setPerformanceCycle()
+	import item as itemClass
+	item = itemClass.Item("test itemName", "testitemDesc")
+	# import item
+	# item = item.Item("test itemName", "testitemDesc")
+	itemStat = Stats(item)
+	print "itemStat:", itemStat
+	item.setStat(itemStat)
+	itemStat.setPerformanceCycle()
 	expected = 41
-	actual = stat.getPerformanceCycle()
+	actual = itemStat.getPerformanceCycle()
 	if not actual == expected:
-		print "incorrect result in stat.getPerformanceCycle():  ",
+		print "incorrect result in itemStat.getPerformanceCycle():  ",
 		print "got:", actual, "expected:", expected
-	
+		assert False
 	l = [1,2,3]
-	stat.setStats(l, type = "supply")
+	itemStat.setStats(l, type = "supply")
 	expected = 2.0
-	actual = stat.getSupMean()
+	actual = itemStat.getSupMean()
 	if not abs(actual - expected) < 0.01:
-		print "incorrect result in Stats.setSup(list):  ",
+		print "incorrect result in Stats.setSup(list, type = 'supply'):  ",
 		print "got:", actual, "expected:", expected
 	expected = 0.8164965809
-	actual = stat.getSupStd()
+	actual = itemStat.getSupStd()
 	if not abs(actual - expected) < 0.01:
 		print "incorrect result in Stats.getSupStd(list):  ",
 		print "got:", actual, "expected:", expected
 	expected = 3
-	actual = stat.getSupN()
+	actual = itemStat.getSupN()
 	if not abs(actual - expected) < 0.01:
 		print "incorrect result in Stats.getSupN(list):  ",
 		print "got:", actual, "expected:", expected
+
+	print "\n\nitemStat (prior to successorStat Update):", itemStat		
+	successor = itemClass.Item("test successorName", "testSuccessorDesc")
+	itemStat.setSuccessor(successor)
+	successorStat = Stats(successor)
+	successor.setStat(successorStat)
+	successorStat.setStats(l, type = "supply")
+	successorStat.setPerformanceCycle()
+	print "\n\nitemStat (after to successorStat Update):", itemStat
+
 		
 if __name__ == "__main__":	
 	testClassStats()
