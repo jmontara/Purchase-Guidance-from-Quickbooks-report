@@ -19,7 +19,11 @@ class Stats(object):
 		
 		# Supply Stats
 		
-		self.item = None
+		self.item = item
+		self.item.setStat(self)		# allow this stat object to be accessed 
+									# from the item object via item.getStat()
+		
+		
 		self.supMean = None  		# this item alone
 		self.supStd = None			
 		self.supN = None
@@ -146,8 +150,8 @@ class Stats(object):
 		"""
 		
 		if not self.successor == None:
-			print "\ntype(self.successor):", type(self.successor)
-			print "type(self.successor.getStat()):", type(self.successor.getStat())
+			# print "\ntype(self.successor):", type(self.successor)
+			# print "type(self.successor.getStat()):", type(self.successor.getStat())
 			return self.successor.getStat().getPerformanceCycle() + self.pc
 		return self.pc
 
@@ -166,8 +170,10 @@ class Stats(object):
 		return self.successor
 		
 	def __str__(self):
+
 		str = "\nStats are roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf \n"
-		str += "Stats object:\n"
+		str += "Stats object for item " + self.item.getItemName()
+		str += "  (" + self.item.getItemDesc() + ")\n"
 		
 		str += "Supply (PO to invoice time, days) stats: \n"
 		str += " Item alone:"
@@ -180,6 +186,7 @@ class Stats(object):
 		successor = self.getSuccessor() 
 		if not successor == None:
 			str += "  successor is: " + successor.getItemName().__str__()
+			str += " (" + successor.getItemDesc() + ")\n"
 			str += "  successor item alone: "
 			str += successor.getStat().getPerformanceCycle().__str__() + "\n"
 		str += "Demand (SO to invoice time, days) stats: \n"
@@ -192,11 +199,8 @@ class Stats(object):
 def testClassStats():
 	import item as itemClass
 	item = itemClass.Item("test itemName", "testitemDesc")
-	# import item
-	# item = item.Item("test itemName", "testitemDesc")
 	itemStat = Stats(item)
-	print "itemStat:", itemStat
-	item.setStat(itemStat)
+	print "\n\nitemStat (prior to any initialization):", itemStat	
 	itemStat.setPerformanceCycle()
 	expected = 41
 	actual = itemStat.getPerformanceCycle()
@@ -226,11 +230,15 @@ def testClassStats():
 	successor = itemClass.Item("test successorName", "testSuccessorDesc")
 	itemStat.setSuccessor(successor)
 	successorStat = Stats(successor)
-	successor.setStat(successorStat)
 	successorStat.setStats(l, type = "supply")
-	successorStat.setPerformanceCycle()
+	successorStat.setPerformanceCycle(meanPOtoInvoice = 10)
+	
 	print "\n\nitemStat (after to successorStat Update):", itemStat
-
+	expected = 34
+	actual = itemStat.getPerformanceCycle()
+	if not abs(actual - expected) < 0.01:
+		print "incorrect result in Stats.getSupN(list):  ",
+		print "got:", actual, "expected:", expected
 		
 if __name__ == "__main__":	
 	testClassStats()
