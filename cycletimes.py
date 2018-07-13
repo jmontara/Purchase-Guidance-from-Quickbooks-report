@@ -21,6 +21,10 @@ class Shipment(object):
 		self.startDateYear = startTransaction.getDate().year
 		self.startDateMonth = startTransaction.getDate().month
 		self.startDate = startTransaction.getDate()
+	def getStart(self):
+		return self.start
+	def getEnd(self):
+		return self.end
 	def getCycleTime(self):
 		""" 
 		returns the time between start transaction and
@@ -62,44 +66,6 @@ class Shipment(object):
 		ret += self.end.getShortStr()
 		ret = ret[:-1] + '>'
 		return ret
-	def getModifiedClone(self, demandQty, 
-						 demandItemName, demandItemDesc):
-		""" 
-		returns shipment object identical to self
-		with exception of kwargs
-		"""
-		startItemName = demandItemName
-		startItemDesc = demandItemDesc
-		startTnum = "None"
-		startType = "demand start"
-		startDate = self.start.date
-		startNum = "None"
-		startQty = demandQty
-		startName = self.start.getName()
-		startMemo = self.start.getMemo()
-		startSOdate = "None"
-		start = classes.transaction.Transaction(
-					startItemName, startItemDesc, startTnum,
-					startType,
-					startDate, startNum, startQty, startName,
-					startMemo, startSOdate)
-		endItemName = demandItemName
-		endItemDesc = demandItemDesc
-		endTnum = "None"
-		endType = "demand end"
-		endDate = self.end.date
-		endNum = "None"
-		endQty = demandQty
-		endName = self.end.getName()
-		endMemo = self.end.getMemo()
-		endSOdate = "None"
-		end = classes.transaction.Transaction(
-					endItemName, endItemDesc, endTnum,
-					endType,
-					endDate, endNum, endQty, endName,
-					endMemo, endSOdate)
-		return Sell(start,end)
-		
 			
 class Buy(Shipment):
 	def __init__(self,startTransaction,endTransaction):
@@ -148,12 +114,58 @@ class Buys(object):
 class Sell(Shipment):
 	def __init__(self,startTransaction,endTransaction):
 		Shipment.__init__(self,startTransaction,endTransaction)
-		self.destination = startTransaction.getName()
+		self.destination = startTransaction.getName() # customer name
 		self.origin = "Manufacturing Warehouse"
 	def getClass(self):
 		return "Sell"
 	def getDestination(self):
 		return self.destination
+	def getModifiedClone(self, demandQty, 
+						 demandItemName, demandItemDesc):
+		""" 
+		returns Sell object that is a clone of self with exceptions
+		including kwargs.
+		"""
+		# print "\nself:", self
+		# print "self.destination:", self.destination
+		# print "demandQty:", demandQty
+		# print "demandItemName:", demandItemName
+		# print "demandItemDesc:", demandItemDesc
+		startItemName = demandItemName
+		startItemDesc = demandItemDesc
+		startTnum = "None"
+		startType = "demand start"
+		startDate = self.start.date
+		startNum = "None"
+		startQty = demandQty
+		# startName = self.destination
+		startName = self.start.getName()
+		startMemo = self.destination
+		# startMemo = self.start.getMemo()
+		startSOdate = "None"
+		start = classes.transaction.Transaction(
+					startItemName, startItemDesc, startTnum,
+					startType,
+					startDate, startNum, startQty, startName,
+					startMemo, startSOdate)
+		endItemName = demandItemName
+		endItemDesc = demandItemDesc
+		endTnum = "None"
+		endType = "demand end"
+		endDate = self.end.date
+		endNum = "None"
+		endQty = demandQty
+		endName = self.end.getName()
+		endMemo = self.end.getMemo()
+		endSOdate = "None"
+		end = classes.transaction.Transaction(
+					endItemName, endItemDesc, endTnum,
+					endType,
+					endDate, endNum, endQty, endName,
+					endMemo, endSOdate)
+		# print "\nSell(start, end):", Sell(start,end)
+		# assert False
+		return Sell(start,end)
 
 		
 class Sells(object):
@@ -161,16 +173,58 @@ class Sells(object):
 		self.byItem = sellShipmentsByItem # dict
 		self.byCustomer = self.populatebyCustomer()
 		
-	def getall(self):
+	def getall(self, limit = None):
 		""" 
-		gives list of all sell objects
+		Gives list of all sell objects for all items. Can be limited 
+		to output only sell objects for a specific item.
+		
+		Input:
+		limit	- either None or str, where str is a valid item name
+				
+		Output:
+		sellObjects - list, list of sell objects
+		
 		"""
 		ret = []
-		for item in self.byItem.keys():
-			for sell in self.byItem[item]:
-				ret.append(sell)
-		return ret
+		if limit == None:
+			for item in self.byItem.keys():
+				for sell in self.byItem[item]:
+					ret.append(sell)
+			return ret
+		else:
+			try: 
+				return self.byItem[limit]
+			except:
+				print "Invalid limit; parameter must be either None or",
+				print "a valid item name."
+				assert False
 
+	def getDemand(self, limit = None, interval = 1):
+		"""
+		Gives mean, std dev, and N for a collection of 
+		sell objects.  The list can be limited to 
+		a particular item and the statistics are compiled
+		based on the interval.
+		
+		Inputs:
+		self	- object, Sells object
+		limit	- either None or str, where str is a valid item name
+		interval  	-int, number of days in interval
+		
+		Outputs:
+		(mean, std, N)
+		mean	- float, the mean of sell qtys in the limited list of
+					of the Sells object
+		std		- float, the standard deviation of sell qtys in 
+					th limited list of the Sells object
+		N 		- int, the length of the limited list of	
+					the Sells object.
+		"""
+		pass
+		# sells = self.getall(limit, interval)
+		
+		
+	
 	def getbyItem(self):
 		return self.byItem		
 	
@@ -190,6 +244,8 @@ class Sells(object):
 	
 	def getbyCustomer(self):
 		return self.byCustomer
+		
+	
 
 
 	
@@ -460,23 +516,20 @@ if __name__ == "__main__":
 	sellShipmentsByItem = functions.getshipments.getshipmentscustomer(items)
 	sellShipmentByItem = functions.getshipments.addDemandShipments(sellShipmentsByItem,
 											  items)
-	sells = Sells(sellShipmentByItem)
 	
-	### the following is a first pass block of code,
-	# functional, 
-	# but the need to calculate performance cycle accurately
-	# and the existence of consigned items directs 
-	# the use of the Stats object.
-	# import functions.showplots
-	# functions.showplots.showPlots(items,
-								  # buys.getbyItem(),
-								  # sells.getbyItem(),
-								  # )
-
+	# assert False
+	
+	sells = Sells(sellShipmentByItem)
 	
 	import functions.statsLoad
 	functions.statsLoad.statsLoad(items, buys, sells)
 
+
+	import functions.showplots
+	functions.showplots.showPlots(items,
+								  buys.getbyItem(),
+								  sells.getbyItem(),
+								  )	
 
 	
 	

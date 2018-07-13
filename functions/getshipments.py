@@ -11,10 +11,12 @@ def getshipments(items):
 	items 	- list of item objects
 	
 	Outputs:
-	buyShipmentsByItem, sellShipmentsByItem 
+	buyShipmentsByItem
 			- list of dictionaries
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""	
+	print "\n\nentering getshipments()"
+	
 	buyShipmentsByItem = {}
 	# startTransactionTypes 
 			# - list, list of strings describing start transaction types.
@@ -103,6 +105,7 @@ def getshipmentscustomer(items):
 	ret 		itemshipments
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""	
+	print "entering getshipmentscustomer(items)"
 	itemshipments = {}
 	sellStartTransactionTypes = ['Sales Order']
 	sellEndTransactionTypes = ['Invoice']
@@ -144,7 +147,7 @@ def getshipmentscustomer(items):
 			saleDte = sale.getDate()
 			
 			# get the most recent end transaction
-			leadTime = datetime.timedelta(999)
+			leadTime = datetime.timedelta(9999)
 			for ship in sortedEndTransactions:
 				shipDte = ship.getDate()
 				thisLeadTime = shipDte - saleDte
@@ -154,15 +157,17 @@ def getshipmentscustomer(items):
 					leadTime = thisLeadTime
 					startTransaction = sale
 					endTransaction = ship
-
-					
+	
 			sells.append(cycletimes.Sell(startTransaction,endTransaction))
-		
+			# print "\nSell object (demand shipment precursor): "
+			# print cycletimes.Sell(startTransaction,endTransaction)
+			
 		# only make entries if there are sells
 		itemName = item.getItemName()
 		if len(sells)>0:
 			itemshipments[itemName] = sells
-		
+			
+	# assert False
 	return itemshipments
 	
 def addDemandShipments(itemShipments, items, toTest = True):
@@ -170,8 +175,6 @@ def addDemandShipments(itemShipments, items, toTest = True):
  	Looks at shipments for each item in itemshipments.   
 	Adds a representative demand shipment to the item and to 
 	each item in the item's indented bill of materials. 
-	
-	returns 
 		
 	Inputs:
 	itemshipments 	- dict,
@@ -182,6 +185,7 @@ def addDemandShipments(itemShipments, items, toTest = True):
 	itemDemandShipments
 				example: {item: [shipment1, shipment2, shipment3]}
 	"""
+	print "\n\nentering addDemandShipments()"
 	
 	itemDemandShipments  = {}	
 	
@@ -191,16 +195,19 @@ def addDemandShipments(itemShipments, items, toTest = True):
 		itemName2Object[item.getItemName()] = item
 	
 	for itemSoldName  in itemShipments.keys():
-		# print "\n\n\nitemSoldName:", itemSoldName
+		# print "\nitemSoldName:", itemSoldName
 		itemSold = itemName2Object[itemSoldName]
 		
 		itemsInItemSoldIbom = itemSold.getIbom().getItems()
-
-		for itemSoldShipment in itemShipments[itemSoldName]:
+		# print "\nitemsInItemSoldIbom:", itemsInItemSoldIbom
+		# assert False
 		
-			itemSoldQty = itemSoldShipment.getQty()
-			# print "itemSoldQty:", itemSoldQty
+		for itemSoldShipment in itemShipments[itemSoldName]:
+			# print "\nitemSoldShipment:", itemSoldShipment
 			# assert False
+			
+			itemSoldQty = itemSoldShipment.getQty()
+
 		
 			for itemInItemSoldIbom in itemsInItemSoldIbom:
 				
@@ -241,4 +248,6 @@ def addDemandShipments(itemShipments, items, toTest = True):
 		
 	return itemDemandShipments
 
+if __name__ == "__main__":	
+	pass
 	

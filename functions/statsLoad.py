@@ -17,7 +17,7 @@ def supplycycles(items, buys):
 			xactions = buys.getbyItem()[itemName]
 
 		except:
-			# no buy transactions for the item
+			# if no buy transactions for the item
 			continue 
 			
 		cycletimes = []
@@ -90,6 +90,7 @@ def statsLoad(items, buys, sells):
 	""" 
 	populate performance cycle for each item in items.
 	"""
+	
 	itemName2Object = {}
 	for item in items:
 		# create lookup directory
@@ -98,27 +99,35 @@ def statsLoad(items, buys, sells):
 		import cycletimes
 		itemStat = classes.stats.Stats(item)
 		item.setStat(itemStat)
-	
+
+		
+	# populate supply cycles
 	supplycycles(items, buys)
 	performancecyclesofassyitem(items, itemName2Object)
 		
+		
+	# populate demand cycles
 	for item in items:
 
-		#populate demand performance cycle
 		itemName = item.getItemName()
 		itemStat = item.getStat()
 		
 		try:
-			# list of buy transactions for the item:
+			# list of sell transactions for the item:
 			xactions = sells.getbyItem()[itemName]
 		except:
-			# no buy transactions for the item
+			# no sell transactions for the item
 			continue 
 			
 		cycletimes = []
 		for xaction in xactions:
 			cycletimes.append(xaction.getCycleTime())
 		itemStat.setStats(cycletimes, type = "demand")
+		
+		
+	# populate demand in performance cycle
+	for item in items:
+		item.getStat().setDmd()
 		
 
 	

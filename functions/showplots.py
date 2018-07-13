@@ -103,7 +103,7 @@ def getsort(shipment):
 	# ret = shipment.getCycleTime()
 	# return ret
 
-def showPlots(items, supply, demand = None, toTest = True):
+def showPlots(items, supply, demand = None):
 	""" 
 	print data and plot histograms for each supplier 
 	requires closing the plot to advance to the next supplier
@@ -115,7 +115,6 @@ def showPlots(items, supply, demand = None, toTest = True):
 	items 	- list, list of item objects
 	supply 	- dictionary, ie, Buys.getbyItem(), Buys.getbySupplier()
 	demand 	- dictionary, ie, Sells.getbyItem(), Sells.getbySupplier()
-	toTest 	- bol, ie, True returns after plotting the first key in dict.
 	"""
 	
 	# standard plot scales that "look ok":
@@ -129,9 +128,9 @@ def showPlots(items, supply, demand = None, toTest = True):
 	itemName2Object = {}
 	for item in items:
 		itemName2Object[item.getItemName()] = item
-		import cycletimes
-		itemStats = cycletimes.classes.stats.Stats()
-		item.setStat(itemStats)
+		# import cycletimes
+		# itemStats = cycletimes.classes.stats.Stats()
+		# item.setStat(itemStats)
 		
 	for key in supply.keys():
 		# to look at only one item, uncomment the following two lines
@@ -169,8 +168,8 @@ def showPlots(items, supply, demand = None, toTest = True):
 		print itemName2Object[key].getStat().getPerformanceCycle()
 		
 		### The following lines are test of Stats object for consistency with graph
-		itemStats.setStats(cycleTimes, type = "supply")
-		print "itemStats:", itemStats
+		# itemStats.setStats(cycleTimes, type = "supply")
+		# print "itemStats:", itemStats
 		
 		# pylab.figure()
 		pylab.subplot(432)
@@ -271,8 +270,8 @@ def showPlots(items, supply, demand = None, toTest = True):
 		showStats = True 
 		makePlot(title, xLabel, yLabel, bins, rwidth, cycleTimes, showStats)
 		### The following lines are test of Stats object for consistency with graph
-		itemStats.setStats(cycleTimes, type = "demand")
-		print "itemStats:", itemStats
+		# itemStats.setStats(cycleTimes, type = "demand")
+		# print "itemStats:", itemStats
 
 		
 		pylab.subplot(435)
@@ -328,7 +327,7 @@ def showPlots(items, supply, demand = None, toTest = True):
 		# The last day of the period for which data is being parsed
 		periodEnd = datetime.date.today().toordinal()
 		# number of full and partial PC cycles in periodStart - periodEnd
-		pcCycles = (periodEnd - periodStart)/pc + 1
+		pcCycles = int((periodEnd - periodStart)/pc) + 1
 		# print "pcCycles:", pcCycles, "pc:", pc
 		# first day of first pcCycle
 		pcCycleStart = periodStart
@@ -405,7 +404,9 @@ def showPlots(items, supply, demand = None, toTest = True):
 		ymin, ymax = pylab.ylim()	
 		pylab.text(xmin + (xmax-xmin)*0.02, (ymax-ymin)/10, str, fontsize = "5")
 				
-	
+		print "item:", item
+		print "itemStat:", item.getStat()
+		
 		pylab.show()
 		# if toTest:
 			# return

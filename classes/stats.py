@@ -3,8 +3,9 @@
 
 class Stats(object):
 	"""
-	The stats object is stored in the item object 
-	and includes data and functions to determine Reorder Point.
+	The stats object is pointed to by and retrievable from 
+	the item object.  Data and functions contained herein 
+	are useful in determining the Reorder Point.
 
 	Reorder Point = Cycle Stock + Demand Safety Stock + Supply Safety Stock.
 		
@@ -16,25 +17,54 @@ class Stats(object):
 		self 	- object, Stats object
 		item	- object, item object
 		"""
-		
-		# Supply Stats
-		
+		# allow access via item.getStat()
 		self.item = item
-		self.item.setStat(self)		# allow this stat object to be accessed 
-									# from the item object via item.getStat()
+		self.item.setStat(self)		
 		
+		# Reorder Point = 
+		# Cycle Stock + Demand Safety Stock + Supply Safety Stock
+		# Cycle Stock = dmdPcMean 
+		# Demand Safety Stock = Z * dmdPcStd
+		# Supply Safety Stock = Z * supStd * dmdMean
 		
-		self.supMean = None  		# this item alone
+		self.dmdPcMean = None		# Demand in PC mean (units 
+									#  shipped per PC)
+		self.dmdPcStd = None		# Demand in PC Std Dev		
+		self.dmdPcN = None			# Demand in PC number of samples
+		self.dmdMean = None			# Demand in day mean (units 
+								    #  shipped per day)
+
+		self.pc = None  			# Performance Cycle (PC, days)		
+		
+		self.supMean = None  		# Supply Cycle time
+									#  (PO to Invoice, days)
 		self.supStd = None			
 		self.supN = None
-		self.pc = None  		
-		
-		self.successor = None   	# successor item	
 
-		self.demMean = None  		# demand stats
-		self.demStd = None
-		self.demN = None
+		self.demMean = None  		# Demand Cycle time
+									# (SO to Invoice, days)
+		self.demStd = None			#  
+		self.demN = None	
+
+		self.successor = None   	# successor item adds to the PC	
 		
+
+	def setDmd(self):
+		""" 
+		# Sets demandPcMean and other demand statistics.
+
+		"""
+		print "entering Stats.setDmd()"
+		
+		
+		for S in self.item.getDemandShipments():
+			print S
+			print "S.getStart():", S.getStart()
+			print "S.getEnd()", S.getEnd()
+			
+			
+		
+			assert False
 
 	def getItem(self):
 		return self.item
@@ -88,35 +118,6 @@ class Stats(object):
 		""" gives sample size used to calculate supMean and supStd"""
 		return self.supN
 		
-	def setDem(self, X):
-		"""
-		Sets mean and standard deviation of cycle times 
-		of deliveries made to customer.  
-		
-		Inputs:
-		X 	- list of ints or floats, example [1,2,3,4,5.0]
-		
-		X 	- list of ints or floats, example [1,2,3,4,5.0]
-		
-		mean	- float, mean or average of entries in list 
-		std		- float, std deviation of entries
-		N 		- int, number of entries
-		"""
-		mean, std, N = self.getMeanStdN(X)
-
-	def getDemMean(self):
-		""" gives mean of cycle times for supply, ie SO 
-		time to Invoice time"""
-		return self.demMean
-		
-	def getDemStd(self):
-		""" gives std deviation of cycle times for demand"""
-		return self.demStd
-		
-	def getDemN(self):
-		""" gives sample size """
-		return self.demN
-
 	def setPerformanceCycle(self, 
 							meanOrder = 2,
 							meanPOtoInvoice = 30,
@@ -169,6 +170,18 @@ class Stats(object):
 		"""
 		return self.successor
 		
+	def getDemMean(self):
+		""" gives mean of cycle times for supply, ie SO 
+		time to Invoice time"""
+		return self.demMean
+		
+	def getDemStd(self):
+		""" gives std deviation of cycle times for demand"""
+		return self.demStd
+		
+	def getDemN(self):
+		""" gives sample size """
+		return self.demN		
 	def __str__(self):
 
 		str = "\nStats are roughly per http://media.apics.org/omnow/Crack%20the%20Code.pdf \n"
@@ -192,7 +205,11 @@ class Stats(object):
 		str += "Demand (SO to invoice time, days) stats: \n"
 		str += " Mean = " + self.getDemMean().__str__() +"\n"
 		str += " Std Dev = " + self.getDemStd().__str__() + "\n"
-		str += " N = " + self.getDemN().__str__() + "\n"		
+		str += " N = " + self.getDemN().__str__() + "\n"
+		str += "Demand in Day Avg (dmdMean, units/day):  " + "\n" 
+		str += "Demand in PC Avg (dmdPCmean, units/PC):  " + "\n"
+		str += "Demand in PC Std Dev (dmdPCstd):  " + "\n "
+		
 		return str
 	
 		
@@ -239,6 +256,22 @@ def testClassStats():
 	if not abs(actual - expected) < 0.01:
 		print "incorrect result in Stats.getSupN(list):  ",
 		print "got:", actual, "expected:", expected
+	
+
+	itemStat.setStats(l, type = "demand")
+	print "\n\nitemStat (after Demand Update):", itemStat
+	expected = 2.0
+	actual = itemStat.getDemMean()
+	if not abs(actual - expected) < 0.01:
+		print "incorrect result in Stats.getDemMean():  ",
+		print "got:", actual, "expected:", expected,
+		print "for list:", l
+	expected = 3
+	actual = itemStat.getDemN()
+	if not abs(actual - expected) < 0.01:
+		print "incorrect result in Stats.getDemN():  ",
+		print "got:", actual, "expected:", expected,
+		print "for list:", l
 		
 if __name__ == "__main__":	
 	testClassStats()
