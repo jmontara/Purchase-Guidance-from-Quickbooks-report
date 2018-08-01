@@ -33,12 +33,23 @@ class Item(object):
 		
 		# Item Statistics (itemStats) ...
 		self.itemStats = ''
-
+		self.itemStat = None # stores an item's Stat object
 		# from addItemPhantoms
 		self.phantomSOqty = 0.0
 		self.phantomOHqty = 0.0
 		self.phantomROpoint = 0.0
 		self.upperAssyNames = []
+		self.demandShipments = []
+	
+	def getDemandShipments(self):
+		return self.demandShipments
+	
+	def addDemandShipment(self, shipment):
+		""" 
+		Add shipment indicating sale of this item
+		or sale of an upper level assembly item
+		"""
+		self.demandShipments.append(shipment) 
 		
 	def getTotSO(self):
 		return self.totSO
@@ -84,7 +95,9 @@ class Item(object):
 		
 	def addUpperAssy(self, itemName):
 		""" 
-		Assumes qty comes only from function addItemPhantoms.
+		appends to list of Upper Assy Names.
+		
+		See function addItemPhantoms.
 		
 		Inputs:
 		self	- object, Item object
@@ -107,6 +120,9 @@ class Item(object):
 		"""
 		return self.upperAssyNames
 	
+	def whereused(self):
+		pass
+		
 	def setItemStatsFromIiqr(self, value, qty):
 		"""
 		self 	- object, Item object
@@ -145,12 +161,20 @@ class Item(object):
 		self.roPoint = roPoint
 		
 	def setItemStats(self, itemStats):
-		# assert type(itemStats) == ItemStats
 		self.itemStats = itemStats
 		
 	def getItemStats(self):
 		return self.itemStats
-		
+	
+	def setStat(self, itemStat):
+		self.itemStat = itemStat
+	
+	def getStat(self):
+		"""
+		returns itemStat object associated with item
+		"""
+		return self.itemStat
+	
 	def getItemName(self):
 		return self.itemName
 		
@@ -340,18 +364,18 @@ class Item(object):
 		return self.totPO
 
 	def __str__(self):
-		ret = "\n\n<Item: " 
+		ret = "<Item: " 
 		ret += self.itemName  
-		# ret += " (" + self.itemDesc + ")>\n"
+		ret += " (" + self.itemDesc + ")>\n"
 		# ret += self.getIbom().__str__() 
 		# ret += self.getXactionsStr()
 		ret += self.itemStats.__str__()
-		ret += "\nOn Hand: " + self.totOH.__str__()
+		ret += "\n On Hand: " + self.totOH.__str__()
 		ret += "    On Sales Order: " + self.totSO.__str__()
 		ret += "    On Purchase Order: " + self.totPO.__str__()
 		ret += "    RO Point: "   + self.roPoint.__str__()
-		ret += "\nWhere used: " + self.upperAssyNames.__str__()
-		ret += "\nPhantom RO Point: "   + self.phantomROpoint.__str__()
-		ret += "\nPhantom OH: " + self.phantomOHqty.__str__()
-		ret += "\nPhantom SO: " + self.phantomSOqty.__str__()
+		ret += "\n Where used: " + self.upperAssyNames.__str__()
+		ret += "\n Phantom RO Point: "   + self.phantomROpoint.__str__()
+		ret += "\n Phantom OH: " + self.phantomOHqty.__str__()
+		ret += "\n Phantom SO: " + self.phantomSOqty.__str__()
 		return ret
