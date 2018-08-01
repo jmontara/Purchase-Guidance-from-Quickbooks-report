@@ -162,10 +162,10 @@ def showPlots(items, supply, demand = None):
 		meanPOtoInvoice=meanPOtoInvoice/len(cycleTimes)
 		itemName2Object[key].getStat().setPerformanceCycle(
 							 meanPOtoInvoice=meanPOtoInvoice)
-		print "cycleTimes:", cycleTimes		
-		print "meanPOtoInvoice:", meanPOtoInvoice
-		print "itemName2Object[key].getStat().getPerformanceCycle():",
-		print itemName2Object[key].getStat().getPerformanceCycle()
+		# print "cycleTimes:", cycleTimes		
+		# print "meanPOtoInvoice:", meanPOtoInvoice
+		# print "itemName2Object[key].getStat().getPerformanceCycle():",
+		# print itemName2Object[key].getStat().getPerformanceCycle()
 		
 		### The following lines are test of Stats object for consistency with graph
 		# itemStats.setStats(cycleTimes, type = "supply")
@@ -302,7 +302,7 @@ def showPlots(items, supply, demand = None):
 				 showStats = False, xmin = monthXmin, xmax = monthXmax)
 
 				 
-		# new row & out of sequence column	
+		# subplot in 4 row 3 column matrix position 12	
 		item = itemName2Object[key]
 		pc = item.getStat().getPerformanceCycle()		
 		import datetime
@@ -327,7 +327,10 @@ def showPlots(items, supply, demand = None):
 		# The last day of the period for which data is being parsed
 		periodEnd = datetime.date.today().toordinal()
 		# number of full and partial PC cycles in periodStart - periodEnd
-		pcCycles = int((periodEnd - periodStart)/pc) + 1
+		try:
+			pcCycles = int((periodEnd - periodStart)/pc) + 1
+		except:
+			pcCycles = 0
 		# print "pcCycles:", pcCycles, "pc:", pc
 		# first day of first pcCycle
 		pcCycleStart = periodStart

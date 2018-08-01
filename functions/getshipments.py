@@ -145,22 +145,48 @@ def getshipmentscustomer(items):
 		for sale in sortedStartTransactions:
 	
 			saleDte = sale.getDate()
+			saleCustomer = sale.getName()
 			
-			# get the most recent end transaction
+			# get the most recent end transaction for the customer
+			# 
 			leadTime = datetime.timedelta(9999)
 			for ship in sortedEndTransactions:
-				shipDte = ship.getDate()
-				thisLeadTime = shipDte - saleDte
 				
+				shipCustomer = ship.getName()
+				shipDte = ship.getDate()
+				thisLeadTime = shipDte - saleDte				
 				zeroLeadTime = shipDte - shipDte
-				if zeroLeadTime <= thisLeadTime < leadTime:
+				
+				# print "sale.getName():", sale.getName()
+				# print "ship.getName():", ship.getName()
+				# assert False
+
+				try:
+					assert shipCustomer == saleCustomer
+					assert zeroLeadTime <= thisLeadTime
+					assert thisLeadTime < leadTime
 					leadTime = thisLeadTime
 					startTransaction = sale
-					endTransaction = ship
-	
-			sells.append(cycletimes.Sell(startTransaction,endTransaction))
+					endTransaction = ship					
+					
+				except:
+					pass
+					
+					
+			demandShipment = cycletimes.Sell(startTransaction,endTransaction)
+			sells.append(demandShipment)
 			# print "\nSell object (demand shipment precursor): "
 			# print cycletimes.Sell(startTransaction,endTransaction)
+			
+			try:
+				# show an errant shipment
+				assert demandShipment.getDestination() == "Bristol-Myers Squibb - Basso"
+				print "demandShipment.getDestination()", demandShipment.getDestination()
+				print "demandShipment:", demandShipment
+				print "\n"
+			except:
+				pass
+
 			
 		# only make entries if there are sells
 		itemName = item.getItemName()
@@ -223,18 +249,22 @@ def addDemandShipments(itemShipments, items, toTest = True):
 				
 				demandShipment = itemSoldShipment.getModifiedClone(demandQty, demandItemName, 
 												demandItemDesc)
-
-				
 					
 				itemName2Object[demandItemName].addDemandShipment(demandShipment)
-				# phantomSales.append(phantomSale)
-				# print "demandShipment:", demandShipment
-				# print "\n"
+				# show an errant shipment
+				# try:
+					# assert demandShipment.getDestination() == "Bristol-Myers Squibb - Basso"
+					# print "demandShipment.getDestination()", demandShipment.getDestination()
+					# print "demandShipment:", demandShipment
+					# print "\n"
+				# except:
+					# pass
+				# assert False
 				
 		# if toTest:
 			# print "toTest:", toTest
 			# break
-	
+	# assert False
 	for key in itemName2Object.keys():
 		item = itemName2Object[key]
 		# populate with all shipments, including those of parts not purchased

@@ -417,9 +417,14 @@ if __name__ == "__main__":
 	### location for input files on desktop
 	iiqrLocation = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\iiqr.csv'
 	issbiLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\issbi.csv'
+	pbidLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\pbid.csv'
+
 	### location for output files on desktop
 	purchaseguidanceLocation ='C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\purchaseguidance.txt'
 	itemFilesOutDir = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\item files showing history of builds & demand from sales\\'
+	itemStats = 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\stats useful for setting reorder point\itemstats.csv'
+	
+
 
 	import functions.readiiqr
 	import functions.readissbi
@@ -524,12 +529,73 @@ if __name__ == "__main__":
 	import functions.statsLoad
 	functions.statsLoad.statsLoad(items, buys, sells)
 
+	import functions.readpbid
+	functions.readpbid.readpbid(pbidLocation, items)
+	
+	
+	
+	######################################
+	# code block prints the item stats alone
+	# count = 0
+	# for item in items:
+		# if item.isPurchased():
+			# print "\n\nitem.getStats():", item.getStat()
+			# count += 1
+	# print "\nprinted item.getStat() for ", count, "items.\n"
 
-	import functions.showplots
-	functions.showplots.showPlots(items,
-								  buys.getbyItem(),
-								  sells.getbyItem(),
-								  )	
+	
+	######################################
+	# code block writes stats to csv file
+	import csv
+	filename = itemStats
+	
+	with open(filename, 'wb') as f:
+		writer = csv.writer(f)
+		
+		#header row:
+		row = ["itemName", "itemDesc", "unitCost", "roPointPhantomNow", "roPointTarget",
+				"costNowLessTarget"]
+		writer.writerow(row)
+		for item in items:
+			if item.isPurchased():
+				# print "\n\nitem.getStats():", item.getStat()	
+					itemName = item.getItemName()
+					itemDesc = item.getItemDesc()
+					unitCost = item.getunitcost()
+					roPointNow = item.getPhantomROpoint()
+					try:
+						roPointTarget = item.getStat().getimplicitreorderpoint()
+						costNowLessTarget = unitCost *(roPointNow - roPointTarget)
+					except: # no implicit reorder point due to no qb data for buy our sell
+						roPointTarget = 0.0
+						costNowLessTarget = 0.0
+					writer.writerow([itemName,itemDesc, unitCost, roPointNow,
+									roPointTarget, costNowLessTarget])
+		
+	with open(filename, 'rb') as f:
+		print "stats:"
+		reader = csv.reader(f)
+		for row in reader:
+			print row
+	assert False
+	
+
+			
+			
+	print "\nprinted item.getStat() for ", count, "items.\n"
+
+	
+		
+	
+	
+	
+	######################################	
+	#  code block prints item stats and plots
+	# import functions.showplots
+	# functions.showplots.showPlots(items,
+								  # buys.getbyItem(),
+								  # sells.getbyItem(),
+								  # )	
 
 	
 	
