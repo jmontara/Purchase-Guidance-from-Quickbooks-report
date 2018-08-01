@@ -53,7 +53,6 @@ def performancecyclesofassyitem(items, itemName2Object):
 	
 	for  itemName in item2successor.keys():
 
-
 		try:
 			itemObject = itemName2Object[itemName]
 		except:
@@ -82,15 +81,11 @@ def performancecyclesofassyitem(items, itemName2Object):
 			print "problem with itemStat.setSuccessor(successorObject)"
 			assert False
 
-	
-
-			
 		
 def statsLoad(items, buys, sells):
 	""" 
 	populate performance cycle for each item in items.
-	"""
-	
+	"""	
 	itemName2Object = {}
 	for item in items:
 		# create lookup directory
@@ -100,11 +95,9 @@ def statsLoad(items, buys, sells):
 		itemStat = classes.stats.Stats(item)
 		item.setStat(itemStat)
 
-		
 	# populate supply cycles
 	supplycycles(items, buys)
 	performancecyclesofassyitem(items, itemName2Object)
-		
 		
 	# populate demand cycles
 	for item in items:

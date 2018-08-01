@@ -1,4 +1,4 @@
-# readiiqr.py
+# readpbid.py
 
 # standard library
 import csv

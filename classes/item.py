@@ -19,6 +19,10 @@ class Item(object):
 		# from QB inventory stock status by item
 		self.roPoint = None
 		
+		# itemStatsFromPbid
+		# from QB purchases by item detail
+		self.unitCost = None
+		
 		# Item creating assemblies have a Transaction being of
 		# type "Build Assembly" and a quantity being of
 		# a positive value.  Transaction stored here  
@@ -41,6 +45,24 @@ class Item(object):
 		self.upperAssyNames = []
 		self.demandShipments = []
 	
+		self.costPrice = None
+		
+	def setItemStatsFromPbid(self, unitCost):
+		"""
+		Add a row of information from pbid.cvs
+		"""
+		try:
+			self.unitCost = float(unitCost)
+		except:
+			print "warning:  fail to set unitCost = ", unitCost, "for item", self.getItemName()
+			# assert False
+			pass
+	def getunitcost(self):
+		"""
+		returns unit cost paid for the most recent purchase
+		"""
+		return self.unitCost
+		
 	def getDemandShipments(self):
 		return self.demandShipments
 	
@@ -152,14 +174,16 @@ class Item(object):
 			
 	def setItemStatsFromIssbi(self, roPoint):
 		"""
+		
+		Inputs:
 		self 	- object, Item object
 		roPoint	- str, string representation of QB reorder point
 					example:  "0"
-					example:  "5"
+					example:  "5"	
 		"""			
 		roPoint = float(roPoint)
 		self.roPoint = roPoint
-		
+				
 	def setItemStats(self, itemStats):
 		self.itemStats = itemStats
 		
@@ -184,10 +208,17 @@ class Item(object):
 	def addXaction(self, transaction):
 		"""
 		Appends transaction to the item's transaction list.
-		Also, sets self.itemCreatingTransaction 
+		
+		Sets self.itemCreatingTransaction 
 		if transaction has has the following characteristics:
 			type = "Build Assembly"
 			qty  > 0
+			most recent
+			
+		Sets self.costPrice 
+		if transaction has the following charactoristics:
+			type = "Bill"
+			qty > 0
 			most recent
 		"""
 		self.xactions.append(transaction)
@@ -331,7 +362,7 @@ class Item(object):
 				   + abs(self.getPhantomROpoint())\
 				   - abs(self.totPO)
 		except: 
-			# print "\n\n\nwarningshould be an item not created by a purchase order:"
+			# print "\n\n\nwarningshould be an item not ever on a purchase order:"
 			# print item
 			return abs(self.getPhantomSOqty())\
 				   - abs(self.getPhantomOHqty())\
