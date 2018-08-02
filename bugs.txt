@@ -1,0 +1,28 @@
+filename:  bugs.txt
+
+list of bugs/caveats 
+
+1) itemstats includes target reorder points equal to zero. 
+
+	Filter - MAX291
+	USB - USB245M-G2
+	Cable-Power-Italy
+	Cable-Computer-UK/HK
+	Battery-Computer
+	Box - CU/RP2
+	Box - MP2
+	Box - MP4
+	Box - MP6 - Narrow
+	Box - RP4
+	Conn - Mini - 4 Pos
+	Cuff Barrel-Rat-Brass-7-8
+	Foot - Screw-On
+	Insulation, self-adhesive
+	LED-Mouse-Potential-option-D
+	O-Ring - 004
+	O-Ring - 007
+	Silicon 1-32 IN x 1-2 IN x 3 FT
+	Thumbnut
+	USB - USB245M
+	V0050-A1
+
