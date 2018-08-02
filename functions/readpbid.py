@@ -6,7 +6,53 @@ import datetime
 
 # import classes.transaction
 
+def cleanunitofmeasure(unitOfMeasure):
+	""" 
+	returns float representation of unitOfMeasure
+	 - 	Strips prepended chars like "pkg of " that appears 
+		in pbid.csv's um column as "pkg of 10"
+		
+	 - Strips appended chars like "-ft", "-feet" that appears 
+	   in pbid.csv's um column as "50-ft"
+	   
+	 - returns 1.0 if pbid.csv's um column is empty 
+	 
+	"""
+	ret = -1
+	
+	# largest int appearing at start 
+	for charIndex in range(len(unitOfMeasure)):
+		try:
+			ret = int(unitOfMeasure[:charIndex])
+			# print "charIndex:", charIndex, "ret:", ret
+		except:
+			pass
+	if ret > 0: return float(ret)
+	
+	# largest int appearing at end
+	for charIndex in range(len(unitOfMeasure)):
+		try:
+			ret = int(unitOfMeasure[charIndex:])
+			return float(ret)
+		except:
+			pass
+			
+	return 1.0
+	
+	
+	return ret
 
+def testcleanunitofmeasure():
+	um = "50-ft"
+	print "um:", um, "cleanunitofmeasure(um):", cleanunitofmeasure(um)
+	um = "pkg of 10"
+	print "um:", um, "cleanunitofmeasure(um):", cleanunitofmeasure(um)
+	um = ""
+	print "um:", um, "cleanunitofmeasure(um):", cleanunitofmeasure(um)
+
+# testcleanunitofmeasure()	
+
+	
 # def readpbid(items = items, filename = "pbid.csv"):
 def readpbid(filename, items):
 	""" 
@@ -79,11 +125,11 @@ def readpbid(filename, items):
 				memo = row[4]
 				source = row[5]
 				qty = row[6]
-				um = row[7]
+				um = cleanunitofmeasure(row[7])
 				costPrice = row[8]
 				amount = row[9] 
 
-				print "\nitemName:", itemName, "row[x]:", costPrice #, type(costPrice)	
+				print "\nitemName:", itemName, "row[x]:", costPrice, "um:", um #, type(costPrice)	
 				for item in row:
 					
 					print "  ", item,
@@ -97,11 +143,12 @@ def readpbid(filename, items):
 					try:
 						print "\nitemName:", itemName, "costPrice:", costPrice
 						# print "type(item):", type(item)
-						item.setItemStatsFromPbid(costPrice)
+						print "\num:", um
+						item.setItemStatsFromPbid(costPrice, um)
 						print "item.getunitcost()", item.getunitcost()
 					except:
 						print "fail to setItemStatsFromPbid"
-						assert False
+						# assert False
 						pass	
 						
 			#convert dte to datetime
@@ -117,10 +164,11 @@ def readpbid(filename, items):
 
 
 if __name__ == "__main__":		
-	print "In readpbid.py"
+	pass
+	# print "In readpbid.py"
 	# import transaction
-	pbidLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\pbid.csv'
-	ret = readpbid(pbidLocation)
+	# pbidLocation= 'C:\Users\john\Dropbox (Visitech)\Company Forms\Inventory\Purchase Guidance\pbid.csv'
+	# ret = readpbid(pbidLocation)
 	# print "ret:", ret
 	
 	## Multiple iiqr files may be read, due to QuickBooks

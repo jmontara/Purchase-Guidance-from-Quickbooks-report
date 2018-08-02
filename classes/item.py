@@ -47,14 +47,21 @@ class Item(object):
 	
 		self.costPrice = None
 		
-	def setItemStatsFromPbid(self, unitCost):
+	def setItemStatsFromPbid(self, costPrice, unitOfMeasure):
 		"""
 		Add a row of information from pbid.cvs
+		
+		Inputs:
+		costPrice 	- float, cost paid per unit of measure
+		unitOfMeasure - float, unit of measure.  
 		"""
-		try:
-			self.unitCost = float(unitCost)
+		try: 
+			self.unitCost = float(costPrice)/float(unitOfMeasure)
 		except:
-			print "warning:  fail to set unitCost = ", unitCost, "for item", self.getItemName()
+			# print "warning:  failed setItemStatsFromPbid(costPrice, unitOfMeasrue)"
+			# print "  costPrice =", costPrice
+			# print "  unitOfMeasure = ", unitOfMeasure
+			# print "  itemName = ", self.getItemName()
 			# assert False
 			pass
 	def getunitcost(self):
