@@ -219,8 +219,7 @@ class Stats(object):
 			print "self.successor.getStat().getSupMean() ", self.successor.getStat().getSupMean() 
 		except:
 			print "no successor"
-			
-			
+					
 		try:  # item with successor  
 
 			self.pc = self.demMean + self.supMean +\
@@ -390,7 +389,7 @@ class Stats(object):
 			# ret += "  per year = 0.0 \n" 
 			# ret += "Cycle Stock = mean Demand in PC:\n"
 			# ret += "  Mean = 0" 
-			ret += "there is no demand\n"
+			ret += "missing supply or demand data for this item\n"
 
 		return ret
 	

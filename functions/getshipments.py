@@ -22,7 +22,7 @@ def getshipments(items):
 			# - list, list of strings describing start transaction types.
 	# endTransactionTypes 
 			# - list, list of strings describing end transaction types.
-	buyStartTransactionTypes = ['Purchase Order']
+	buyStartTransactionTypes = ['Purchase Order', 'Credit Card Charge']
 	buyEndTransactionTypes = ['Bill', 'Item Receipt']
 
 	for item in items:
@@ -37,6 +37,12 @@ def getshipments(items):
 			qty = transaction.getQty()
 			if type in buyStartTransactionTypes\
 				and qty == '0':
+				startTransactions.append(transaction)
+				# print transaction, "\ntype,qty:", type, qty, "\n"
+				# assert False
+			if type in buyStartTransactionTypes\
+				and not qty == '0'\
+				and type == 'Credit Card Charge':
 				startTransactions.append(transaction)
 				# print transaction, "\ntype,qty:", type, qty, "\n"
 				# assert False
@@ -59,7 +65,19 @@ def getshipments(items):
 									   
 		for buy in sortedStartTransactions:
 
-			if buy.getQty() == '0':
+			# Append to buys where there is no start + end transaction in data
+			if buy.getType() == 'Credit Card Charge':
+				startTransaction = buy
+				endTransaction = buy
+				buys.append(cycletimes.Buy(startTransaction,endTransaction))
+				# print "after appending Credit Card Charge, buys:", buys
+				# print "item.getItemName():", item.getItemName()
+				# for buy in buys:
+					# print "buy:", buy
+				# assert False
+
+			# Append to buys where there is start + end transaction in data
+			elif buy.getQty() == '0':
 			
 				buyDte = buy.getDate()
 				

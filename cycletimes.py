@@ -549,6 +549,10 @@ if __name__ == "__main__":
 	import csv
 	filename = itemStats
 	
+	# limit some of the printed output
+	toTest = True
+	limit = "Box - MP2"
+	
 	with open(filename, 'wb') as f:
 		writer = csv.writer(f)
 		
@@ -576,18 +580,24 @@ if __name__ == "__main__":
 		print "stats:"
 		reader = csv.reader(f)
 		for row in reader:
-			print row
-	assert False
+			if toTest:
+				if row[0] == limit:
+					print "toTest row:", row
+				else:
+					continue
+					print row
 	
-
-			
-			
+	for item in items:
+		if toTest:
+			if item.getItemName() == limit:
+				print item.getStat()
+	
+	# assert False
+				
 	print "\nprinted item.getStat() for ", count, "items.\n"
 
 	
-		
-	
-	
+
 	
 	######################################	
 	#  code block prints item stats and plots
