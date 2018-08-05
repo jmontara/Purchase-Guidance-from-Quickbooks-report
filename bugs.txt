@@ -2,8 +2,17 @@ filename:  bugs.txt
 
 list of bugs/caveats 
 
-1) itemstats includes target reorder points equal to zero. 
+Issue: roPointTarget includes cycle stock.  This is appropriate if the reorder points
+are used within Quickbooks, wherin inventory counts are decremented when an item is 
+logically built.  The file output "purchaseguidance.txt", decrements inventory counts
+based on quickbooks sales orders, however, and so such reorder points would be 
+and in fact appear to be overly conservative. 
+Plan:  remove cycle stock from the inventory reorder point calculation.
 
+
+
+Issue: itemstats includes target reorder points equal to zero. 
+Partially Resolved 08/05/2018:  added "Credit Card Charge" to buy transactions
 	Filter - MAX291
 	USB - USB245M-G2
 	Cable-Power-Italy
